@@ -1,21 +1,7 @@
 //
 // Created by Zero on 6/25/2023.
 //
-/*
-#define XPLM XPLM400
 
-#ifdef _WIN32
-#define IBM 1
-#endif
-
-#ifdef __MACH__
-#define APL apl
-#endif
-
-#ifdef __linux__
-#define LIN
-#endif
-*/
 
 
 

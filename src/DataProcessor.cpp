@@ -3,26 +3,26 @@
 //
 
 #include "DataProcessor.h"
+#include "../SDK/CHeaders/XPLM/XPLMDataAccess.h"
+#include "../boost/json.hpp"
+#include <map>
+
+map<int, XPLMDataRef> referenceMap = {};
 
 
 
 
-void DataProcessor::SendReferences(dataReference *refs)
-{
+
+
+
+//========PUBLIC METHODS===========//
+
+
+void DataProcessor::Start() {
+
+}
+
+void DataProcessor::Stop() {
 
 }
 
-void DataProcessor::SendReference(dataReference ref)
-{
-
-}
-
-bool DataProcessor::OpenConnection()
-{
-    return false;
-}
-
-void DataProcessor::CloseConnection()
-{
-
-}

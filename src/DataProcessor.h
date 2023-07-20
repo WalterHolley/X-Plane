@@ -37,10 +37,9 @@ struct dataReference {
 class DataProcessor
 {
     public:
-        bool OpenConnection();
-        void CloseConnection();
-        void SendReference(dataReference ref);
-        void SendReferences(dataReference* refs);
+        void Start();
+        void Stop();
+
 
 };
 
