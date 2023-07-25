@@ -5,13 +5,19 @@
 #include "DataProcessor.h"
 #include "../SDK/CHeaders/XPLM/XPLMDataAccess.h"
 #include "../boost/json.hpp"
+#include <iomanip>
+#include <iostream>
 #include <map>
+
 
 map<int, XPLMDataRef> referenceMap = {};
 
 
 
+void parse_frame(char* buffer)
+{
 
+}
 
 
 

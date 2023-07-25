@@ -25,6 +25,8 @@ FILE * logFile;
 static XPLMDataRef latDataRef = NULL;
 static XPLMDataRef lonDataRef = NULL;
 
+//This is going away. Data processing needs to be moved
+//and performed on a separate thread
 float PollData()
 {
     fprintf(logFile, "Polling Data \n");
@@ -52,6 +54,7 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
 
 
     //create path for log
+    //TODO: Consider keeping log, but moving to resource folder
     XPLMGetSystemPath(outFilePath);
     strcat(outFilePath, "TestValues.txt");
     logFile = fopen(outFilePath, "w");
@@ -90,6 +93,7 @@ PLUGIN_API int XPluginEnable(void)
 
 PLUGIN_API void XPluginDisable(void)
 {
+    //close connection or send 'pause' notification?
     fflush(logFile);
 }
 
@@ -98,6 +102,7 @@ PLUGIN_API void XPluginReceiveMessage(void)
 
 }
 
+//Windows DLL boilerplate
 #ifdef _WIN32
 #include <windows.h>
 
