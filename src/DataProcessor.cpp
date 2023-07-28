@@ -3,7 +3,7 @@
 //
 
 #include "DataProcessor.hpp"
-#include <boost/json.hpp>
+#include <boost/json/src.hpp>
 #include <iomanip>
 #include <fstream>
 #include <map>
@@ -161,7 +161,7 @@ dataFrame parse_frame(json::value jsonValue)
         df.failures = get_datastructures(extractedValue);
     }
 
-
+    return df;
 
 
 }
@@ -176,4 +176,6 @@ void DataProcessor::Start() {
 void DataProcessor::Stop() {
 
 }
+
+
 

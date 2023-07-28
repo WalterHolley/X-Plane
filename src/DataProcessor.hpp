@@ -2,8 +2,8 @@
 // Created by Zero on 6/26/2023.
 //
 
-#ifndef X_PLANE_DATAPROCESSOR_H
-#define X_PLANE_DATAPROCESSOR_H
+#ifndef DATAPROCESSOR_H
+#define DATAPROCESSOR_H
 
 #include "../SDK/CHeaders/XPLM/XPLMDataAccess.h"
 #include <string>
@@ -48,4 +48,4 @@ class DataProcessor
 
 
 
-#endif //X_PLANE_DATAPROCESSOR_H
+#endif //DATAPROCESSOR_H

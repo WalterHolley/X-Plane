@@ -32,7 +32,9 @@ if(WIN32)
 
     find_package(Boost )
     add_definitions(-DIBM=1)
-    target_link_libraries( xplplugin -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/Libraries/Win/XPLM_64.lib" dp)
+    include_directories(${Boost_INCLUDE_DIR})
+    target_link_libraries( xplplugin
+            -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/Libraries/Win/XPLM_64.lib")
 elseif (APPLE)
     add_definitions(-DAPL=1)
 else ()
