@@ -9,7 +9,7 @@
 #include <string.h>
 #include <ctime>
 #include <chrono>
-
+#include "DataProcessor.hpp"
 #include "../SDK/CHeaders/XPLM/XPLMDataAccess.h"
 #include "../SDK/CHeaders/XPLM/XPLMUtilities.h"
 #include "../SDK//CHeaders//XPLM//XPLMProcessing.h"
@@ -22,24 +22,14 @@
 
 
 FILE * logFile;
-static XPLMDataRef latDataRef = NULL;
-static XPLMDataRef lonDataRef = NULL;
+DataProcessor dataProcessor;
 
 //This is going away. Data processing needs to be moved
 //and performed on a separate thread
 float PollData()
 {
     fprintf(logFile, "Polling Data \n");
-    //Poll for data refs
-    float lat = XPLMGetDataf(latDataRef);
-    float lon = XPLMGetDataf(lonDataRef);
 
-    fprintf(logFile, "lat: %f, lon: %f\n", lat, lon);
-    //gather data
-
-    //compile packet
-
-    //send over network
     return 1.0;
 }
 
@@ -59,20 +49,8 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
     strcat(outFilePath, "TestValues.txt");
     logFile = fopen(outFilePath, "w");
 
-    try
-    {
-
-    }
-    catch (...)
-    {
-
-    }
-    //init data ref
-    lonDataRef = XPLMFindDataRef("sim/flightmodel/position/longititude");
-    latDataRef = XPLMFindDataRef("sim/flightmodel/position/latitude");
-
-
-
+    //open data collection
+    dataProcessor.Start();
     //register callback
     XPLMRegisterFlightLoopCallback((XPLMFlightLoop_f)PollData, 1.0, NULL);
     return 1;

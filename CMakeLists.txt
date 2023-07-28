@@ -18,7 +18,7 @@ if(NOT Boost_FOUND)
 endif ()
 
 project(${PROJECT_NAME})
-
+include_directories(src)
 include(src/CMakeLists.txt)
 
 
@@ -32,7 +32,7 @@ if(WIN32)
 
     find_package(Boost )
     add_definitions(-DIBM=1)
-    target_link_libraries( xplplugin -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/Libraries/Win/XPLM_64.lib")
+    target_link_libraries( xplplugin -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/Libraries/Win/XPLM_64.lib" dp)
 elseif (APPLE)
     add_definitions(-DAPL=1)
 else ()

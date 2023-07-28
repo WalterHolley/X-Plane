@@ -5,7 +5,9 @@
 #ifndef X_PLANE_DATAPROCESSOR_H
 #define X_PLANE_DATAPROCESSOR_H
 
+#include "../SDK/CHeaders/XPLM/XPLMDataAccess.h"
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -18,19 +20,20 @@ struct dataStruct {
     string units;
     int freq;
     int rounding;
+    string value;
 
 };
 
 struct dataFrame{
-    dataStruct* state;
-    dataStruct* inputs;
-    dataStruct* instructions;
-    dataStruct* failures;
+    vector<dataStruct> state;
+    vector<dataStruct> inputs;
+    vector<dataStruct> instructions;
+    vector<dataStruct> failures;
 };
 
 struct dataReference {
-    string dataref;
-    string value;
+    XPLMDataRef dataref;
+    string type;
 };
 
 
