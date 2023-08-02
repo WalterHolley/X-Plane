@@ -3,6 +3,7 @@ set(PROJECT_NAME XStateReader)
 set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_LIBRARY_TYPE SHARED)
 set(CMAKE_CXX_STANDARD ${CMAKE_LANGUAGE_VERSION})
+set(BOOST_USE_STATIC_LIBS ON)
 set(BOOST_ROOT "${BOOST_PATH}")
 set(Boost_INCLUDE_DIR "${PROJECT_SOURCE_DIR}")
 
@@ -34,7 +35,8 @@ if(WIN32)
     add_definitions(-DIBM=1)
     include_directories(${Boost_INCLUDE_DIR})
     target_link_libraries( xplplugin
-            -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/Libraries/Win/XPLM_64.lib")
+            -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/Libraries/Win/XPLM_64.lib"
+            -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/libboost_json-vc143-mt-x64-1_82.lib")
 elseif (APPLE)
     add_definitions(-DAPL=1)
 else ()

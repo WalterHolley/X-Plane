@@ -2,8 +2,11 @@
 // Created by Zero on 6/26/2023.
 //
 
+#define MAX_BUFFER 20480
+
 #include "DataProcessor.hpp"
-#include <boost/json/src.hpp>
+#include "../SDK/CHeaders/XPLM/XPLMUtilities.h"
+#include "../boost/json/src.hpp"
 #include <iomanip>
 #include <fstream>
 #include <map>
@@ -14,37 +17,125 @@ json::string_view  STATES_KEY = "state";
 json::string_view INPUTS_KEY = "input";
 json::string_view INSTRUCTIONS_KEY = "instructions";
 json::string_view FAILURES_KEY = "failures";
-char const* fileName = "../test/datarefs.json";
+json::stream_parser parser;
+char const* fileName = "F:\\X-Plane 12\\Resources\\plugins\\BeigeBox\\win_x64\\datarefs.json";
+
+FILE * logFile;
+char outFilePath[512];
+
+/**
+ * string representation of reply element in
+ * the response frame
+ * @param ds
+ * @return
+ */
+char* dataStruct_to_reply_string(dataStruct ds)
+{
+    fprintf(logFile, "writing reply string\n");
+    char buffer[50];
+    string jsonString;
+    sprintf(buffer, "{\"%s\": %i, \"%s\": \"%s\" }", "index", ds.index, "value", ds.value.c_str());
+    fprintf(logFile, "outgoing json object: %s\n", buffer);
+    return buffer;
+}
+
+/**
+ * populates an array for a reply message
+ * @param p
+ * @param dataVector
+ */
+void write_reply_array(json::stream_parser &p, vector<dataStruct> dataVector)
+{
+    for(int i = 0; i < dataVector.size(); i++)
+    {
+        p.write_some(dataStruct_to_reply_string(dataVector[i]));
+        if(i + 1 < dataVector.size())
+            p.write_some(",");
+    }
+}
+
+string set_reply_message(dataFrame df)
+{
+    fprintf(logFile, "setting reply message\n");
+
+    string result;
+
+    try
+    {
+        parser.write_some("{");
+        parser.write_some("\"states\" : [");
+        write_reply_array(parser, df.state);
+        parser.write_some("],");
+        parser.write_some("\"inputs\" : [");
+        write_reply_array(parser, df.inputs);
+        parser.write_some("],");
+        parser.write_some("\"instructions\" : [");
+        write_reply_array(parser, df.instructions);
+        parser.write_some("],");
+        parser.write_some("\"failures\" : [");
+        write_reply_array(parser, df.failures);
+        parser.write_some("]}");
+
+        if(parser.done())
+        {
+            result = json::serialize(parser.release());
+        }
+        else
+        {
+            fprintf(logFile, "json reply not completely formed\n");
+        }
+    }
+    catch(exception& ex)
+    {
+        fprintf(logFile, "An exception occurred while setting the sreply message: %s\n", ex.what());
+    }
 
 
 
+    return result;
+}
 
 
 //TODO: Gets from file for now, will read from UDP stream later?
 json::value get_frame()
 {
-    char* buffer;
     string line;
-    ifstream testFile(fileName);
+
     json::error_code errorCode;
-    json::stream_parser parser;
 
-
-    while(getline(testFile, line))
+    try
     {
-        strcat(buffer, line.c_str());
+        ifstream testFile(fileName);
+        if(testFile.is_open())
+        {
+            while(getline(testFile, line) && (!errorCode))
+            {
+
+                parser.write_some(line, errorCode);
+            }
+            testFile.close();
+
+
+            if(errorCode)
+                fprintf(logFile, "There was a problem during json parsing: %s", errorCode.what().c_str());
+
+            parser.finish(errorCode);
+
+            if(errorCode)
+                fprintf(logFile, "There was a wrapping up during json parsing: %s", errorCode.what().c_str());
+        }
+        else
+        {
+            fprintf(logFile, "json file not opened\n");
+        }
+
     }
-    testFile.close();
-
-    parser.write(buffer, sizeof (buffer), errorCode);
-
-    if(errorCode)
+    catch(exception& ex)
+    {
+        fprintf(logFile, "There was a problem during json parsing: %s", ex.what());
         return nullptr;
+    }
 
-    parser.finish(errorCode);
-
-    if(errorCode)
-        return nullptr;
 
     return parser.release();
 }
@@ -75,7 +166,7 @@ dataStruct map_datastruct(json::object jsonObj)
  */
 string get_dataref_value(int index)
 {
-    string result = NULL;
+    string result = "";
 
     dataReference dr = referenceMap[index];
     result = to_string(XPLMGetDataf(dr.dataref));
@@ -106,7 +197,7 @@ vector<dataStruct> get_datastructures(json::value val)
 
                 if(referenceMap.find(ds.index) == referenceMap.end())
                 {//not found.  add
-
+                    fprintf(logFile, "New data ref found: %s\n",ds.dref.c_str());
                     ref = XPLMFindDataRef(ds.dref.c_str());
                     dataReference dr;
                     dr.dataref = ref;
@@ -123,6 +214,10 @@ vector<dataStruct> get_datastructures(json::value val)
         }
 
     }
+    else
+    {
+        fprintf(logFile, "get_datastructures:  value passed was not an array\n");
+    }
 
     return datarefs;
 
@@ -134,32 +229,42 @@ dataFrame parse_frame(json::value jsonValue)
     //extract json object
     auto const& jsonObj = jsonValue.get_object();
     json::value extractedValue;
+    fprintf(logFile, "Parsing frame\n");
 
-    //check for states
-    if(jsonObj.contains(STATES_KEY))
+    try
     {
-        extractedValue = jsonObj.at(STATES_KEY);
-        df.state = get_datastructures(extractedValue);
+        //check for states
+        if(jsonObj.contains(STATES_KEY))
+        {
+            extractedValue = jsonObj.at(STATES_KEY);
+            df.state = get_datastructures(extractedValue);
+        }
+        //check for inputs
+        if(jsonObj.contains(INPUTS_KEY))
+        {
+            extractedValue = jsonObj.at(INPUTS_KEY);
+            df.inputs = get_datastructures(extractedValue);
+        }
+
+        //check for instructions
+        if(jsonObj.contains(INSTRUCTIONS_KEY))
+        {
+            extractedValue = jsonObj.at(INSTRUCTIONS_KEY);
+            df.instructions = get_datastructures(extractedValue);
+        }
+        //check for failures
+        if(jsonObj.contains(FAILURES_KEY))
+        {
+            extractedValue = jsonObj.at(FAILURES_KEY);
+            df.failures = get_datastructures(extractedValue);
+        }
     }
-    //check for inputs
-    if(jsonObj.contains(INPUTS_KEY))
+    catch(exception& ex)
     {
-        extractedValue = jsonObj.at(INPUTS_KEY);
-        df.inputs = get_datastructures(extractedValue);
+        fprintf(logFile, "an exception occurred in parse_frame: %s", ex.what());
+        return df;
     }
 
-    //check for instructions
-    if(jsonObj.contains(INSTRUCTIONS_KEY))
-    {
-        extractedValue = jsonObj.at(INSTRUCTIONS_KEY);
-        df.instructions = get_datastructures(extractedValue);
-    }
-    //check for failures
-    if(jsonObj.contains(FAILURES_KEY))
-    {
-        extractedValue = jsonObj.at(FAILURES_KEY);
-        df.failures = get_datastructures(extractedValue);
-    }
 
     return df;
 
@@ -170,11 +275,30 @@ dataFrame parse_frame(json::value jsonValue)
 
 
 void DataProcessor::Start() {
-    parse_frame(get_frame());
+
+    //create path for log
+    //TODO: Consider keeping log, but moving to resource folder
+    XPLMGetSystemPath(outFilePath);
+    strcat(outFilePath, "TestValues.txt");
+
+    try{
+        logFile = fopen(outFilePath, "w");
+
+        string reply = set_reply_message(parse_frame(get_frame()));
+        fprintf(logFile, "%s\n", reply.c_str());
+        fclose(logFile);
+
+    }
+    catch(exception& ex)
+    {
+        fprintf(logFile, "An exception occurred: %s", ex.what());
+        fclose(logFile);
+    }
+
 }
 
 void DataProcessor::Stop() {
-
+    fclose(logFile);
 }
 
 
