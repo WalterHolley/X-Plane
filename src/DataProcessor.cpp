@@ -29,14 +29,15 @@ char outFilePath[512];
  * @param ds
  * @return
  */
-char* dataStruct_to_reply_string(dataStruct ds)
+string dataStruct_to_reply_string(dataStruct ds)
 {
     fprintf(logFile, "writing reply string\n");
     char buffer[50];
-    string jsonString;
-    sprintf(buffer, "{\"%s\": %i, \"%s\": \"%s\" }", "index", ds.index, "value", ds.value.c_str());
+
+    snprintf(buffer, 50, "{\"%s\": %i, \"%s\": \"%s\" }", "index", ds.index, "value", ds.value.c_str());
+    string jsonString = buffer;
     fprintf(logFile, "outgoing json object: %s\n", buffer);
-    return buffer;
+    return jsonString;
 }
 
 /**
@@ -57,7 +58,7 @@ void write_reply_array(json::stream_parser &p, vector<dataStruct> dataVector)
 string set_reply_message(dataFrame df)
 {
     fprintf(logFile, "setting reply message\n");
-
+    parser.reset();
     string result;
 
     try
