@@ -286,7 +286,8 @@ void DataProcessor::Start() {
         logFile = fopen(outFilePath, "w");
 
         string reply = set_reply_message(parse_frame(get_frame()));
-        fprintf(logFile, "%s\n", reply.c_str());
+
+        fprintf(logFile, "Final reply message\n%s\n", reply.c_str());
         fclose(logFile);
 
     }
