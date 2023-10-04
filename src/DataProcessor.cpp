@@ -13,10 +13,17 @@
 
 namespace  json = boost::json;
 map<int, dataReference> referenceMap = {};
-json::string_view  STATES_KEY = "state";
-json::string_view INPUTS_KEY = "input";
-json::string_view INSTRUCTIONS_KEY = "instructions";
-json::string_view FAILURES_KEY = "failures";
+const json::string_view  STATES_KEY = "state";
+const json::string_view INPUTS_KEY = "input";
+const json::string_view INSTRUCTIONS_KEY = "instructions";
+const json::string_view FAILURES_KEY = "failures";
+const string INDEX_KEY = "index";
+const string DREF_KEY = "dref";
+const string DESCRIPTION_KEY = "description";
+const string FREQ_KEY = "freq";
+const string ROUNDING_KEY = "rounding";
+const string UNITS_KEY = "units";
+
 json::stream_parser parser;
 char const* fileName = "F:\\X-Plane 12\\Resources\\plugins\\BeigeBox\\win_x64\\datarefs.json";
 
@@ -141,6 +148,16 @@ json::value get_frame()
     return parser.release();
 }
 
+string extract_string(json::object &jsonObj, string &paramKey)
+{
+    return reinterpret_cast<basic_string<char> &&>(jsonObj.at(paramKey).get_string());
+}
+
+int extract_int(json::object &jsonObj, string &paramKey)
+{
+    return jsonObj.at(paramKey).get_int64();
+}
+
 /**
  * maps a datastruct from a json object provided from
  * the server
@@ -149,12 +166,12 @@ json::value get_frame()
 dataStruct map_datastruct(json::object jsonObj)
 {
     dataStruct structure;
-    structure.index = jsonObj.at("index").get_int64();
-    structure.dref = jsonObj.at("dref").get_string();
-    structure.description = jsonObj.at("description").get_string();
-    structure.freq = jsonObj.at("freq").get_int64();
-    structure.rounding = jsonObj.at("rounding").get_int64();
-    structure.units = jsonObj.at("units").get_string();
+    structure.index = jsonObj.at(INDEX_KEY).get_int64();
+    structure.dref = jsonObj.at(DREF_KEY).get_string();
+    structure.description = jsonObj.at(DESCRIPTION_KEY).get_string();
+    structure.freq = jsonObj.at(FREQ_KEY).get_int64();
+    structure.rounding = jsonObj.at(ROUNDING_KEY).get_int64();
+    structure.units = jsonObj.at(UNITS_KEY).get_string();
 
     return structure;
 
