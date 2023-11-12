@@ -1,17 +1,15 @@
-//
-// Created by Zero on 6/26/2023.
-//
-
 #define MAX_BUFFER 20480
 
-#include "DataProcessor.hpp"
-#include "../SDK/CHeaders/XPLM/XPLMUtilities.h"
+#include "DataProcessor.h"
+#include "DataUtil.h"
 #include "../boost/json/src.hpp"
 #include <iomanip>
 #include <fstream>
 #include <map>
 
+
 namespace  json = boost::json;
+
 map<int, dataReference> referenceMap = {};
 const json::string_view  STATES_KEY = "state";
 const json::string_view INPUTS_KEY = "input";
@@ -23,12 +21,12 @@ const string DESCRIPTION_KEY = "description";
 const string FREQ_KEY = "freq";
 const string ROUNDING_KEY = "rounding";
 const string UNITS_KEY = "units";
+DataUtil _util;
 
 json::stream_parser parser;
-char const* fileName = "F:\\X-Plane 12\\Resources\\plugins\\BeigeBox\\win_x64\\datarefs.json";
 
-FILE * logFile;
-char outFilePath[512];
+
+
 
 /**
  * string representation of reply element in
@@ -38,12 +36,15 @@ char outFilePath[512];
  */
 string dataStruct_to_reply_string(dataStruct ds)
 {
-    fprintf(logFile, "writing reply string\n");
+    _util.writeLog("Writing reply string");
     char buffer[50];
+    char* logMsg;
 
     snprintf(buffer, 50, "{\"%s\": %i, \"%s\": \"%s\" }", "index", ds.index, "value", ds.value.c_str());
+    _util.writeLog(buffer);
     string jsonString = buffer;
-    fprintf(logFile, "outgoing json object: %s\n", buffer);
+    sprintf(logMsg, "outgoing json object: %s\n", buffer);
+    _util.writeLog(buffer);
     return jsonString;
 }
 
@@ -64,7 +65,7 @@ void write_reply_array(json::stream_parser &p, vector<dataStruct> dataVector)
 
 string set_reply_message(dataFrame df)
 {
-    fprintf(logFile, "setting reply message\n");
+    _util.writeLog("Setting reply message");
     parser.reset();
     string result;
 
@@ -90,57 +91,50 @@ string set_reply_message(dataFrame df)
         }
         else
         {
-            fprintf(logFile, "json reply not completely formed\n");
+            _util.writeLog("json reply ont completely formed");
         }
     }
     catch(exception& ex)
     {
-        fprintf(logFile, "An exception occurred while setting the sreply message: %s\n", ex.what());
+        char* logMsg;
+        sprintf(logMsg, "An exception occurred while setting the sreply message: %s\n", ex.what());
+        _util.writeLog(logMsg);
     }
-
-
 
     return result;
 }
 
 
-//TODO: Gets from file for now, will read from UDP stream later?
-json::value get_frame()
-{
-    string line;
 
+json::value get_frame(string message)
+{
+    char* logMsg;
     json::error_code errorCode;
 
     try
     {
-        ifstream testFile(fileName);
-        if(testFile.is_open())
+        parser.write_some(message, errorCode);
+
+        if(errorCode)
         {
-            while(getline(testFile, line) && (!errorCode))
-            {
-
-                parser.write_some(line, errorCode);
-            }
-            testFile.close();
-
-
-            if(errorCode)
-                fprintf(logFile, "There was a problem during json parsing: %s", errorCode.what().c_str());
-
-            parser.finish(errorCode);
-
-            if(errorCode)
-                fprintf(logFile, "There was a wrapping up during json parsing: %s", errorCode.what().c_str());
+            sprintf(logMsg, "There was a problem during json parsing: %s", errorCode.what().c_str());
+            _util.writeLog(logMsg);
         }
+
+        parser.finish(errorCode);
+
+        if(errorCode)
+            sprintf(logMsg, "There was a wrapping up during json parsing: %s", errorCode.what().c_str());
         else
         {
-            fprintf(logFile, "json file not opened\n");
+            sprintf(logMsg, "message parsing completed successfully");
         }
-
+        _util.writeLog(logMsg);
     }
     catch(exception& ex)
     {
-        fprintf(logFile, "There was a problem during json parsing: %s", ex.what());
+        sprintf(logMsg, "There was a problem during json parsing: %s", ex.what());
+        _util.writeLog(logMsg);
         return nullptr;
     }
 
@@ -215,7 +209,7 @@ vector<dataStruct> get_datastructures(json::value val)
 
                 if(referenceMap.find(ds.index) == referenceMap.end())
                 {//not found.  add
-                    fprintf(logFile, "New data ref found: %s\n",ds.dref.c_str());
+
                     ref = XPLMFindDataRef(ds.dref.c_str());
                     dataReference dr;
                     dr.dataref = ref;
@@ -234,7 +228,7 @@ vector<dataStruct> get_datastructures(json::value val)
     }
     else
     {
-        fprintf(logFile, "get_datastructures:  value passed was not an array\n");
+        _util.writeLog("get_datastructures:  value passed was not an array");
     }
 
     return datarefs;
@@ -247,7 +241,7 @@ dataFrame parse_frame(json::value jsonValue)
     //extract json object
     auto const& jsonObj = jsonValue.get_object();
     json::value extractedValue;
-    fprintf(logFile, "Parsing frame\n");
+    _util.writeLog("Parsing frame");
 
     try
     {
@@ -279,8 +273,9 @@ dataFrame parse_frame(json::value jsonValue)
     }
     catch(exception& ex)
     {
-        fprintf(logFile, "an exception occurred in parse_frame: %s", ex.what());
-        return df;
+        char* logMsg;
+        sprintf(logMsg, "an exception occurred in parse_frame: %s", ex.what());
+        _util.writeLog(logMsg);
     }
 
 
@@ -291,33 +286,32 @@ dataFrame parse_frame(json::value jsonValue)
 
 //========PUBLIC METHODS===========//
 
+DataProcessor::DataProcessor()
+{
+    _util = DataUtil();
+}
 
 void DataProcessor::Start() {
 
-    //create path for log
-    //TODO: Consider keeping log, but moving to resource folder
-    XPLMGetSystemPath(outFilePath);
-    strcat(outFilePath, "TestValues.txt");
-
     try{
-        logFile = fopen(outFilePath, "w");
-
-        string reply = set_reply_message(parse_frame(get_frame()));
-
-        fprintf(logFile, "Final reply message\n%s\n", reply.c_str());
-        fclose(logFile);
+        _util.writeLog("Connect and receive initial message");
+        string reply = set_reply_message(parse_frame(get_frame(_util.receive())));
+        _util.writeLog("Begin data transfer");
+        _util.send(reply);
 
     }
     catch(exception& ex)
     {
-        fprintf(logFile, "An exception occurred: %s", ex.what());
-        fclose(logFile);
+        char* message;
+        sprintf(message, "An exception occurred: %s", ex.what());
+        _util.writeLog(message);
+
     }
 
 }
 
 void DataProcessor::Stop() {
-    fclose(logFile);
+
 }
 
 

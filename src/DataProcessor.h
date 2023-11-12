@@ -6,6 +6,7 @@
 #define DATAPROCESSOR_H
 
 #include "../SDK/CHeaders/XPLM/XPLMDataAccess.h"
+#include "DataUtil.h"
 #include <string>
 #include <vector>
 
@@ -42,7 +43,7 @@ class DataProcessor
     public:
         void Start();
         void Stop();
-
+        DataProcessor();
 
 };
 

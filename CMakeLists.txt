@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD ${CMAKE_LANGUAGE_VERSION})
 set(BOOST_USE_STATIC_LIBS ON)
 set(BOOST_ROOT "${BOOST_PATH}")
 set(Boost_INCLUDE_DIR "${PROJECT_SOURCE_DIR}")
+set(CWIC_LIB ${CMAKE_CURRENT_SOURCE_DIR}/lib/libcwic_lib.so)
 
 find_package(Boost 1.82.0 REQUIRED)
 
@@ -19,6 +20,7 @@ if(NOT Boost_FOUND)
 endif ()
 
 project(${PROJECT_NAME})
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/SDK/Libraries)
 include_directories(src)
 include(src/CMakeLists.txt)
 
@@ -26,12 +28,11 @@ include(src/CMakeLists.txt)
 add_definitions(-DXPLM301=1 -DXPLM300=1 -DXPLM210=1 -DXPLM200=1)
 
 if (MSVC)
-    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    set(CMAKE_WINDOWS_EXPO`RT_ALL_SYMBOLS ON)
 endif()
 
 if(WIN32)
 
-    find_package(Boost )
     add_definitions(-DIBM=1)
     include_directories(${Boost_INCLUDE_DIR})
     target_link_libraries( xplplugin
@@ -41,9 +42,16 @@ elseif (APPLE)
     add_definitions(-DAPL=1)
 else ()
     add_definitions(-DLIN=1)
+    option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}")
+    message("Creating build for Linux")
+    message(${PROJECT_SOURCE_DIR})
+    target_link_libraries( xplplugin PRIVATE "${PROJECT_SOURCE_DIR}/SDK/Libraries/libcwic_lib.so"
+            -shared -rdynamic -nodefaultlibs -undefined_warning "${PROJECT_SOURCE_DIR}/SDK/Libraries/libXPLM_64.so")
 endif (WIN32)
 
-set_target_properties(xplplugin PROPERTIES PREFIX "")
 set_target_properties(xplplugin PROPERTIES OUTPUT_NAME "BeigeBox")
 set_target_properties(xplplugin PROPERTIES SUFFIX ".xpl")
 
@@ -52,5 +60,5 @@ if(WIN32)
 elseif (APPLE)
     install(TARGETS xplplugin RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/BeigeBox/mac_x64/ )
 else()
-    install(TARGETS xplplugin RUNTIME DESTINATION ./BeigeBox/lin_x64/ )
+    install(TARGETS xplplugin LIBRARY DESTINATION "${PROJECT_SOURCE_DIR}/BeigeBox/lin_x64/" )
 endif (WIN32)

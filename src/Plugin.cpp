@@ -9,7 +9,7 @@
 #include <string.h>
 #include <ctime>
 #include <chrono>
-#include "DataProcessor.hpp"
+#include "DataProcessor.h"
 #include "../SDK/CHeaders/XPLM/XPLMDataAccess.h"
 #include "../SDK//CHeaders//XPLM//XPLMProcessing.h"
 
