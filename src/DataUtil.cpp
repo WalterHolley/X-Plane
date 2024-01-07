@@ -4,11 +4,15 @@
 
 
 boost::system::error_code ec;
-boost::asio::io_service io_service;
-udp::socket _socket(io_service);
 json::stream_parser parser;
 
 
+void writeLog(string message)
+{
+    char time_string[MAX_TIME];
+    strftime(time_string, MAX_TIME, "%mm-%dd-%yyyy", localtime(&t));
+    fprintf(logFile, "%s: %s\n", time_string, message.c_str());
+}
 //***JSON PARSING**//
 
 
@@ -53,7 +57,7 @@ json::value get_frame(string message)
         if(errorCode)
         {
             sprintf(logMsg, "There was a problem during json parsing: %s", errorCode.what().c_str());
-            _util.writeLog(logMsg);
+            writeLog(logMsg);
         }
 
         parser.finish(errorCode);
@@ -64,12 +68,12 @@ json::value get_frame(string message)
         {
             sprintf(logMsg, "message parsing completed successfully");
         }
-        _util.writeLog(logMsg);
+        writeLog(logMsg);
     }
     catch(exception& ex)
     {
         sprintf(logMsg, "There was a problem during json parsing: %s", ex.what());
-        _util.writeLog(logMsg);
+        writeLog(logMsg);
         return nullptr;
     }
 
@@ -86,15 +90,15 @@ json::value get_frame(string message)
  */
 string dataStruct_to_reply_string(dataStruct ds)
 {
-    _util.writeLog("Writing reply string");
+    writeLog("Writing reply string");
     char buffer[50];
     char* logMsg;
 
     snprintf(buffer, 50, "{\"%s\": %i, \"%s\": \"%s\" }", "index", ds.index, "value", ds.value.c_str());
-    _util.writeLog(buffer);
+    writeLog(buffer);
     string jsonString = buffer;
     sprintf(logMsg, "outgoing json object: %s\n", buffer);
-    _util.writeLog(buffer);
+    writeLog(buffer);
     return jsonString;
 }
 
@@ -170,7 +174,7 @@ vector<dataStruct> get_datastructures(json::value val)
     }
     else
     {
-        _util.writeLog("get_datastructures:  value passed was not an array");
+        writeLog("get_datastructures:  value passed was not an array");
     }
 
     return datarefs;
@@ -183,7 +187,6 @@ dataFrame parse_frame(json::value jsonValue)
     //extract json object
     auto const& jsonObj = jsonValue.get_object();
     json::value extractedValue;
-    _util.writeLog("Parsing frame");
 
     try
     {
@@ -217,7 +220,7 @@ dataFrame parse_frame(json::value jsonValue)
     {
         char* logMsg;
         sprintf(logMsg, "an exception occurred in parse_frame: %s", ex.what());
-        _util.writeLog(logMsg);
+        writeLog(logMsg);
     }
     return df;
 }
@@ -230,18 +233,6 @@ DataUtil::DataUtil()
     strcat(outFilePath, "TestValues.txt");
     logFile = fopen(outFilePath, "w");
 
-    //CWIC resource init
-    cwic = cwic_init();
-    cwic_socket_addr = (int8_t*)malloc(sizeof(int8_t));
-    cwic_buffer = (char*)malloc(MAX_CWIC_BUFFER*sizeof(char));
-    //UDP connection setup
-    cwic_cwic_sock_addr(cwic, cwic_socket_addr);
-    memcpy(cwic_buffer, &cwic_socket_addr, sizeof(cwic_socket_addr));
-    _endpoint = udp::endpoint(address::from_string(cwic_buffer), REMOTE_PORT);
-
-
-
-    _socket.open(udp::v4());
 }
 
 /**
@@ -249,59 +240,11 @@ DataUtil::DataUtil()
  * @param df Frame representing the data to be sent
  * @return true if data sent successfully
  */
-bool DataUtil::send(dataFrame df)
+
+
+void DataUtil::writeToLog(string message)
 {
-    bool result = false;
-    try
-    {
-        string message = dataframe_to_string(df);
-        _socket.send_to(boost::asio::buffer(message), _endpoint);
-        result = true;
-    }
-    catch(exception &ex)
-    {
-        if(_socket)
-        {
-            _socket.close();
-        }
-    }
-    return result;
-}
-
-dataFrame DataUtil::receive()
-{
-
-    dataFrame returnValue;
-
-    try
-    {
-        buffer = nullptr;
-        _socket.receive(buffer);
-        string result(buffer);
-        returnValue = parse_frame(get_frame(result));
-        if(ec)//handle socket error
-        {
-            _socket.close();
-            returnValue = nullptr;
-        }
-        else
-        {
-          io_service.run();
-        }
-    }
-    catch(exception &ex)
-    {
-        _socket.close();
-    }
-
-    return returnValue;
-}
-
-void DataUtil::writeLog(string message)
-{
-    char time_string[MAX_TIME];
-    strftime(time_string, MAX_TIME, "%mm-%dd-%yyyy", localtime(&t));
-    fprintf(logFile, "%s: %s\n", time_string, message.c_str());
+    writeLog(message);
 }
 
 /**
@@ -309,9 +252,8 @@ void DataUtil::writeLog(string message)
  * @param df
  * @return
  */
-DataUtil::string dataframe_to_string(dataFrame df)
+string DataUtil::dataframeToString(dataFrame df)
 {
-    _util.writeLog("Parsing dataFrame to json string");
     parser.reset();
     string result;
 
@@ -337,28 +279,25 @@ DataUtil::string dataframe_to_string(dataFrame df)
         }
         else
         {
-            _util.writeLog("json message not completely formed");
+            writeLog("json message not completely formed");
         }
     }
     catch(exception& ex)
     {
         char* logMsg;
         sprintf(logMsg, "An exception occurred while building the json message: %s\n", ex.what());
-        _util.writeLog(logMsg);
+        writeLog(logMsg);
     }
 
     return result;
 }
 
+dataFrame DataUtil::getScenarioData(std::string request)
+{
+    return parse_frame(get_frame(request));
+}
+
 DataUtil::~DataUtil()
 {
     fclose(logFile);
-    _socket.close();
-    free(cwic);
-    buffer = nullptr;
-    if(cwic_socket_addr)
-        free(cwic_socket_addr);
-    if(cwic_buffer)
-        free(cwic_buffer);
-
 }

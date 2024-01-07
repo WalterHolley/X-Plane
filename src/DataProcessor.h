@@ -5,8 +5,9 @@
 #ifndef DATAPROCESSOR_H
 #define DATAPROCESSOR_H
 
-#include "../SDK/CHeaders/XPLM/XPLMDataAccess.h"
+
 #include "DataUtil.h"
+#include "UDPClient.h"
 #include <string>
 #include <vector>
 
@@ -19,7 +20,10 @@ class DataProcessor
         void Start();
         void Stop();
         DataProcessor();
-
+        ~DataProcessor();
+    private:
+        DataUtil _util;
+        UDPClient _client;
 };
 
 

@@ -10,6 +10,8 @@ set(PRIVATE_SOURCE
         "${CMAKE_CURRENT_LIST_DIR}/c_headers.h"
         "${CMAKE_CURRENT_LIST_DIR}/DataUtil.h"
         "${CMAKE_CURRENT_LIST_DIR}/DataProcessor.h"
+        "${CMAKE_CURRENT_LIST_DIR}/UDPClient.h"
+        "${CMAKE_CURRENT_LIST_DIR}/UDPClient.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/DataProcessor.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/DataUtil.cpp"
 )
@@ -28,6 +30,7 @@ target_sources(xplplugin PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/Plugin.cpp
         ${CMAKE_CURRENT_LIST_DIR}/DataProcessor.cpp
         ${CMAKE_CURRENT_LIST_DIR}/DataUtil.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/UDPClient.cpp
 )
 
 
