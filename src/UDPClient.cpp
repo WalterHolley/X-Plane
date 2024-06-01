@@ -16,6 +16,7 @@ UDPClient::UDPClient()
     cwic = cwic_init();
     cwic_socket_addr = (int8_t*)malloc(sizeof(int8_t));
     cwic_buffer = (char*)malloc(MAX_CWIC_BUFFER*sizeof(char));
+    _util = new DataUtil();
 
     //UDP connection setup
     cwic_cwic_sock_addr(cwic, cwic_socket_addr);
@@ -29,7 +30,7 @@ bool UDPClient::send(dataFrame df)
     bool result = false;
     try
     {
-        string message = _util.dataframeToString(df);
+        string message = _util->dataframeToString(df);
         _socket.send_to(boost::asio::buffer(message), _endpoint);
         result = true;
     }
@@ -38,11 +39,8 @@ bool UDPClient::send(dataFrame df)
         string msg = "There was a problem sending the data to cwic: ";
         msg.append(ex.what());
 
-        _util.writeToLog(msg);
-        if(_socket != nullptr_t)
-        {
-            _socket.close();
-        }
+        _util->writeToLog(msg);
+
     }
     return result;
 }
@@ -54,18 +52,13 @@ dataFrame UDPClient::receive()
 
     try
     {
-        buffer = nullptr;
-        _socket.receive(boost::asio::buffer(buffer));
-
-        if(ec)//handle socket error
-        {
-            _socket.close();
-            returnValue = nullptr_t;
+        if(_socket.is_open()){
+            fill(buffer.begin(), buffer.end(), NULL);
+            _socket.receive(boost::asio::buffer(buffer));
+            returnValue = _util->getScenarioData(buffer.c_array());
         }
-        else
-        {
-            string result(buffer);
-            returnValue = parse_frame(get_frame(result));
+        else{
+            _util->writeToLog("Data connection is not available.");
         }
     }
     catch(exception &ex)
@@ -80,7 +73,7 @@ UDPClient::~UDPClient()
 {
     _socket.close();
     free(cwic);
-    buffer = nullptr;
+    free(_util);
     if(cwic_socket_addr)
         free(cwic_socket_addr);
     if(cwic_buffer)

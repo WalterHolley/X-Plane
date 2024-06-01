@@ -6,7 +6,6 @@
 #define DATAPROCESSOR_H
 
 
-#include "DataUtil.h"
 #include "UDPClient.h"
 #include <string>
 #include <vector>
@@ -19,11 +18,12 @@ class DataProcessor
     public:
         void Start();
         void Stop();
+        void get();
         DataProcessor();
         ~DataProcessor();
     private:
-        DataUtil _util;
-        UDPClient _client;
+        UDPClient* _client;
+        DataUtil* _util;
 };
 
 

@@ -7,7 +7,7 @@ set(PUBLIC_SOURCE
 )
 
 set(PRIVATE_SOURCE
-        "${CMAKE_CURRENT_LIST_DIR}/c_headers.h"
+        "../SDK/cwic/include/c_headers.h"
         "${CMAKE_CURRENT_LIST_DIR}/DataUtil.h"
         "${CMAKE_CURRENT_LIST_DIR}/DataProcessor.h"
         "${CMAKE_CURRENT_LIST_DIR}/UDPClient.h"
@@ -16,11 +16,6 @@ set(PRIVATE_SOURCE
         "${CMAKE_CURRENT_LIST_DIR}/DataUtil.cpp"
 )
 
-#add_library(xplplugin SHARED ${CMAKE_CURRENT_LIST_DIR}/Plugin.cpp
-#        ${CMAKE_CURRENT_LIST_DIR}/DataUtil.h
-#        ${CMAKE_CURRENT_LIST_DIR}/c_headers.h
-#        ${CMAKE_CURRENT_LIST_DIR}/DataProcessor.h
-#)
 
 add_library(xplplugin SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE})
 

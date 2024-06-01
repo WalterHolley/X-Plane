@@ -8,10 +8,14 @@
 
 #define REMOTE_PORT 49042 //TODO:  Bad place for configuration. change later
 
+#ifdef WIN32
+#include<winsock2.h>
+#include<windows.h>
+#endif
 #include "DataUtil.h"
-#include "c_headers.h"
-#include "../boost/asio.hpp"
-#include "../boost/array.hpp"
+#include "../SDK/cwic/include/c_headers.h"
+#include <boost/asio.hpp>
+#include <boost/array.hpp>
 
 using namespace std;
 using boost::asio::ip::udp;
@@ -27,7 +31,8 @@ public:
     ~UDPClient();
     void close();
 private:
-    DataUtil _util;
+    DataUtil* _util;
+
     boost::array<char, MAX_CWIC_BUFFER> buffer;
     void* cwic;
     int8_t* cwic_socket_addr;

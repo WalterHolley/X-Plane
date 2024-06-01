@@ -4,15 +4,15 @@
 
 #define MAX_TIME 20
 
-#include "../SDK/CHeaders/XPLM/XPLMUtilities.h"
-#include "../SDK/CHeaders/XPLM/XPLMDataAccess.h"
-#include "../boost/json/src.hpp"
+#include<XPLM/XPLMUtilities.h>
+#include<XPLM/XPLMDataAccess.h>
+#include<boost/json.hpp>
 #include <string>
 #include <cstring>
 #include <iostream>
 #include <time.h>
 #include <map>
-
+#include<vector>
 
 
 
@@ -57,10 +57,7 @@ const string DESCRIPTION_KEY = "description";
 const string FREQ_KEY = "freq";
 const string ROUNDING_KEY = "rounding";
 const string UNITS_KEY = "units";
-map<int, dataReference> referenceMap = {};
-char* outFilePath;
-FILE* logFile;
-time_t t;
+
 
 
 class DataUtil{
@@ -70,6 +67,9 @@ public:
     dataFrame getScenarioData(string request);
     void writeToLog(string message);
     ~DataUtil();
+
+
+
 
 };
 

@@ -5,11 +5,16 @@
 
 boost::system::error_code ec;
 json::stream_parser parser;
+time_t t;
+map<int, dataReference> referenceMap = {};
+char* outFilePath;
+FILE* logFile;
 
 
 void writeLog(string message)
 {
     char time_string[MAX_TIME];
+
     strftime(time_string, MAX_TIME, "%mm-%dd-%yyyy", localtime(&t));
     fprintf(logFile, "%s: %s\n", time_string, message.c_str());
 }
