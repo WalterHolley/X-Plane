@@ -46,6 +46,7 @@ endif()
 if(WIN32)
 
     add_definitions(-DIBM=1)
+    option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
     target_link_libraries( xplplugin
             -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/Libraries/Win/XPLM_64.lib"
             "${PROJECT_SOURCE_DIR}/SDK/cwic/lib/cwic_lib.dll"
@@ -54,7 +55,6 @@ elseif (APPLE)
     add_definitions(-DAPL=1)
 else ()
     add_definitions(-DLIN=1)
-    option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}")
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}")

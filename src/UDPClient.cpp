@@ -1,12 +1,22 @@
 //
 // Created by zero on 1/5/24.
 //
+#ifdef IBM
+#include<winsock2.h>
+#include<windows.h>
+#endif
 
 #include "UDPClient.h"
+#include <boost/asio.hpp>
+#include <boost/array.hpp>
 
-
+using boost::asio::ip::udp;
+using boost::asio::ip::address;
 boost::asio::io_service io_service;
 udp::socket _socket(io_service);
+udp::endpoint _endpoint;
+
+boost::array<char, MAX_CWIC_BUFFER> buffer;
 
 //*****PUBLIC METHODS*****//
 UDPClient::UDPClient()
