@@ -8,7 +8,6 @@
 boost::asio::io_service io_service;
 udp::socket _socket(io_service);
 
-
 //*****PUBLIC METHODS*****//
 UDPClient::UDPClient()
 {
@@ -21,8 +20,21 @@ UDPClient::UDPClient()
     //UDP connection setup
     cwic_cwic_sock_addr(cwic, cwic_socket_addr);
     memcpy(cwic_buffer, &cwic_socket_addr, sizeof(cwic_socket_addr));
+
+}
+
+void UDPClient::open()
+{
     _endpoint = udp::endpoint(address::from_string(cwic_buffer), REMOTE_PORT);
     _socket.open(udp::v4());
+}
+
+void UDPClient::close()
+{
+    if(_socket.is_open())
+    {
+        _socket.close();
+    }
 }
 
 bool UDPClient::send(dataFrame df)
@@ -34,7 +46,7 @@ bool UDPClient::send(dataFrame df)
         _socket.send_to(boost::asio::buffer(message), _endpoint);
         result = true;
     }
-    catch(exception &ex)
+    catch(std::exception &ex)
     {
         string msg = "There was a problem sending the data to cwic: ";
         msg.append(ex.what());
@@ -61,7 +73,7 @@ dataFrame UDPClient::receive()
             _util->writeToLog("Data connection is not available.");
         }
     }
-    catch(exception &ex)
+    catch(std::exception &ex)
     {
         _socket.close();
     }

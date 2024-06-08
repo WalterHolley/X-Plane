@@ -6,7 +6,7 @@
 
 #include<XPLM/XPLMUtilities.h>
 #include<XPLM/XPLMDataAccess.h>
-#include<boost/json.hpp>
+#include<boost/utility/string_view.hpp>
 #include <string>
 #include <cstring>
 #include <iostream>
@@ -19,9 +19,9 @@
 
 
 
-namespace  json = boost::json;
-using namespace std;
 
+using namespace std;
+using namespace boost;
 
 
 struct dataStruct {
@@ -47,10 +47,10 @@ struct dataReference {
     string type;
 };
 
-const json::string_view  STATES_KEY = "state";
-const json::string_view INPUTS_KEY = "input";
-const json::string_view INSTRUCTIONS_KEY = "instructions";
-const json::string_view FAILURES_KEY = "failures";
+const boost::string_view  STATES_KEY = "state";
+const boost::string_view INPUTS_KEY = "input";
+const boost::string_view INSTRUCTIONS_KEY = "instructions";
+const boost::string_view FAILURES_KEY = "failures";
 const string INDEX_KEY = "index";
 const string DREF_KEY = "dref";
 const string DESCRIPTION_KEY = "description";

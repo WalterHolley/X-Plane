@@ -1,7 +1,7 @@
 
 
 #include "DataUtil.h"
-
+#include<boost/json/src.hpp>
 
 boost::system::error_code ec;
 json::stream_parser parser;
@@ -18,8 +18,8 @@ void writeLog(string message)
     strftime(time_string, MAX_TIME, "%mm-%dd-%yyyy", localtime(&t));
     fprintf(logFile, "%s: %s\n", time_string, message.c_str());
 }
-//***JSON PARSING**//
 
+//***JSON PARSING**//
 
 /**
  * maps a datastruct from a json object provided from
@@ -54,10 +54,10 @@ json::value get_frame(string message)
 {
     char* logMsg;
     json::error_code errorCode;
-
+    boost::string_view bsv = boost::string_view(message);
     try
     {
-        parser.write_some(message, errorCode);
+        parser.write(bsv, errorCode);
 
         if(errorCode)
         {
@@ -75,7 +75,7 @@ json::value get_frame(string message)
         }
         writeLog(logMsg);
     }
-    catch(exception& ex)
+    catch(std::exception& ex)
     {
         sprintf(logMsg, "There was a problem during json parsing: %s", ex.what());
         writeLog(logMsg);
@@ -112,14 +112,18 @@ string dataStruct_to_reply_string(dataStruct ds)
  * @param p
  * @param dataVector
  */
-void write_reply_array(json::stream_parser &p, vector<dataStruct> dataVector)
+string write_reply_array(vector<dataStruct> dataVector)
 {
+    string replyString = "";
     for(int i = 0; i < dataVector.size(); i++)
     {
-        p.write_some(dataStruct_to_reply_string(dataVector[i]));
+
+        replyString.append(dataStruct_to_reply_string(dataVector[i]));
         if(i + 1 < dataVector.size())
-            p.write_some(",");
+            replyString.append(",");
     }
+
+    return replyString;
 }
 
 /**
@@ -221,7 +225,7 @@ dataFrame parse_frame(json::value jsonValue)
             df.failures = get_datastructures(extractedValue);
         }
     }
-    catch(exception& ex)
+    catch(std::exception& ex)
     {
         char* logMsg;
         sprintf(logMsg, "an exception occurred in parse_frame: %s", ex.what());
@@ -237,6 +241,7 @@ DataUtil::DataUtil()
     XPLMGetSystemPath(outFilePath);
     strcat(outFilePath, "TestValues.txt");
     logFile = fopen(outFilePath, "w");
+
 
 }
 
@@ -261,22 +266,18 @@ string DataUtil::dataframeToString(dataFrame df)
 {
     parser.reset();
     string result;
+    char* data;
+
 
     try
     {
-        parser.write_some("{");
-        parser.write_some("\"states\" : [");
-        write_reply_array(parser, df.state);
-        parser.write_some("],");
-        parser.write_some("\"inputs\" : [");
-        write_reply_array(parser, df.inputs);
-        parser.write_some("],");
-        parser.write_some("\"instructions\" : [");
-        write_reply_array(parser, df.instructions);
-        parser.write_some("],");
-        parser.write_some("\"failures\" : [");
-        write_reply_array(parser, df.failures);
-        parser.write_some("]}");
+        sprintf(data, "{\"states\":[%s], \"inputs\":[%s], \"instructions\":[%s], \"failures\":[%s]}",
+                write_reply_array(df.state).c_str(),
+                write_reply_array(df.inputs).c_str(),
+                write_reply_array(df.instructions).c_str(),
+                write_reply_array(df.failures).c_str());
+
+        parser.write(boost::string_view(data).substr(0, string(data).length()));
 
         if(parser.done())
         {
@@ -287,7 +288,7 @@ string DataUtil::dataframeToString(dataFrame df)
             writeLog("json message not completely formed");
         }
     }
-    catch(exception& ex)
+    catch(std::exception& ex)
     {
         char* logMsg;
         sprintf(logMsg, "An exception occurred while building the json message: %s\n", ex.what());
@@ -305,4 +306,5 @@ dataFrame DataUtil::getScenarioData(std::string request)
 DataUtil::~DataUtil()
 {
     fclose(logFile);
+    parser.finish();
 }

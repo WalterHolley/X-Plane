@@ -3,7 +3,6 @@
 #include "DataProcessor.h"
 
 
-#include <iomanip>
 #include <fstream>
 
 
@@ -34,7 +33,7 @@ void DataProcessor::Start()
 
 
     }
-    catch(exception& ex)
+    catch(std::exception& ex)
     {
         char* message;
         sprintf(message, "An exception occurred: %s", ex.what());
