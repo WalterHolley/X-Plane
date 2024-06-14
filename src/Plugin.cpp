@@ -3,7 +3,10 @@
 //
 
 
-
+#define XPLM200
+#define XPLM210
+#define XPLM300
+#define XPLM400
 
 #include <string.h>
 #include <chrono>
