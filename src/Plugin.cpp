@@ -66,7 +66,7 @@ PLUGIN_API int XPluginEnable(void)
     }
 
     //open data collection
-    //dataProcessor->Start();
+    dataProcessor->Start();
     return 1;
 }
 

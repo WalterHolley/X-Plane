@@ -35,8 +35,14 @@ UDPClient::UDPClient()
 
 void UDPClient::open()
 {
+    boost::system::error_code ec;
     _endpoint = udp::endpoint(address::from_string(cwic_buffer), REMOTE_PORT);
-    _socket.open(udp::v4());
+    _socket.open(udp::v4(), ec);
+
+    if(ec)
+    {
+        _util->writeToLog("There was a problem opening a socket to cwic: " + ec.message());
+    }
 }
 
 void UDPClient::close()
@@ -44,6 +50,7 @@ void UDPClient::close()
     if(_socket.is_open())
     {
         _socket.close();
+        _util->writeToLog("cwic connection closed");
     }
 }
 
@@ -55,6 +62,7 @@ bool UDPClient::send(dataFrame df)
         string message = _util->dataframeToString(df);
         _socket.send_to(boost::asio::buffer(message), _endpoint);
         result = true;
+        _util->writeToLog("Data sent to cwic");
     }
     catch(std::exception &ex)
     {
@@ -77,6 +85,7 @@ dataFrame UDPClient::receive()
         if(_socket.is_open()){
             fill(buffer.begin(), buffer.end(), NULL);
             _socket.receive(boost::asio::buffer(buffer));
+            _util->writeToLog("Data received from cwic");
             returnValue = _util->getScenarioData(buffer.c_array());
         }
         else{
@@ -85,7 +94,11 @@ dataFrame UDPClient::receive()
     }
     catch(std::exception &ex)
     {
+        char* errorMessage = "An exception has occurred while receiving a message, and the connection has been close. ";
+        strcat(errorMessage, ex.what());
         _socket.close();
+        _util->writeToLog( errorMessage);
+
     }
 
     return returnValue;
