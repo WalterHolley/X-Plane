@@ -62,7 +62,7 @@ PLUGIN_API int XPluginEnable(void)
 {
     if(dataProcessor == nullptr)
     {
-        //dataProcessor = new DataProcessor();
+        dataProcessor = new DataProcessor();
     }
 
     //open data collection
