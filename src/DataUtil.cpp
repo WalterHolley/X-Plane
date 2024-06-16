@@ -30,11 +30,11 @@ dataStruct map_datastruct(json::object jsonObj)
 {
     dataStruct structure;
     structure.index = jsonObj.at(INDEX_KEY).get_int64();
-    structure.dref = jsonObj.at(DREF_KEY).get_string();
-    structure.description = jsonObj.at(DESCRIPTION_KEY).get_string();
+    structure.dref = jsonObj.at(DREF_KEY).get_string().c_str();
+    structure.description = jsonObj.at(DESCRIPTION_KEY).get_string().c_str();
     structure.freq = jsonObj.at(FREQ_KEY).get_int64();
     structure.rounding = jsonObj.at(ROUNDING_KEY).get_int64();
-    structure.units = jsonObj.at(UNITS_KEY).get_string();
+    structure.units = jsonObj.at(UNITS_KEY).get_string().c_str();
 
     return structure;
 

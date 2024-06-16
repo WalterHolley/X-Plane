@@ -5,7 +5,7 @@ set(CMAKE_LIBRARY_TYPE SHARED)
 set(CMAKE_CXX_STANDARD ${CMAKE_LANGUAGE_VERSION})
 set(BOOST_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED FALSE)
-set(Boost_DEBUG OFF)
+set(Boost_DEBUG ON)
 
 
 set(XPLANE_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/SDK/xplane")
@@ -16,7 +16,7 @@ else ()
     set(CWIC_LIB SDK/cwic/lib/libcwic_lib.so)
 endif (WIN32)
 
-find_package(Boost REQUIRED)
+find_package(Boost 1.82.0 REQUIRED)
 
 
 if(Boost_FOUND)
@@ -36,7 +36,7 @@ include_directories(src)
 include(src/CMakeLists.txt)
 
 
-add_definitions(-DXPLM400=1 -DXPLM303=1 -DXPLM301=1 -DXPLM300=1 -DXPLM210=1 -DXPLM200=1)
+#add_definitions(-DXPLM400=1 -DXPLM303=1 -DXPLM301=1 -DXPLM300=1 -DXPLM210=1 -DXPLM200=1)
 
 if (MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -44,13 +44,13 @@ endif()
 
 
 if(WIN32)
-
+    message("Building for windows")
     add_definitions(-DIBM=1)
     option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
     target_link_libraries( xplplugin
             -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/Libraries/Win/XPLM_64.lib"
             -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/Libraries/Win/XPWidgets_64.lib"
-            "${PROJECT_SOURCE_DIR}/SDK/cwic/lib/cwic_lib.dll"
+            -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/cwic/lib/cwic_lib.dll"
             "ws2_32")
 elseif (APPLE)
     add_definitions(-DAPL=1)

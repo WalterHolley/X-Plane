@@ -36,17 +36,17 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
 {
 
     //basic plugin information
-    strcpy(name, "BeigeBox Recorder");
+    strcpy(name, "BeigeBox");
     strcpy(sig, "com.avidata.recorder");
     strcpy(desc, "Sim Flight Event Recorder for varied data");
 
     if(dataProcessor == nullptr)
     {
-        dataProcessor = new DataProcessor();
+        //dataProcessor = new DataProcessor();
     }
 
     //open data collection
-    dataProcessor->Start();
+    //dataProcessor->Start();
     //register callback
     XPLMRegisterFlightLoopCallback((XPLMFlightLoop_f)PollData, 1.0, NULL);
     return 1;
