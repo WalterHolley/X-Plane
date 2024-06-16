@@ -40,13 +40,9 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
     strcpy(sig, "com.avidata.recorder");
     strcpy(desc, "Sim Flight Event Recorder for varied data");
 
-    if(dataProcessor == nullptr)
-    {
-        //dataProcessor = new DataProcessor();
-    }
 
-    //open data collection
-    //dataProcessor->Start();
+
+
     //register callback
     XPLMRegisterFlightLoopCallback((XPLMFlightLoop_f)PollData, 1.0, NULL);
     return 1;
@@ -64,6 +60,13 @@ PLUGIN_API void XPluginStop(void)
 
 PLUGIN_API int XPluginEnable(void)
 {
+    if(dataProcessor == nullptr)
+    {
+        //dataProcessor = new DataProcessor();
+    }
+
+    //open data collection
+    //dataProcessor->Start();
     return 1;
 }
 
