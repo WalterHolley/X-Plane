@@ -13,7 +13,7 @@
 #include <time.h>
 #include <map>
 #include<vector>
-
+#include "Logger.h"
 
 
 
@@ -62,7 +62,7 @@ const string UNITS_KEY = "units";
 
 class DataUtil{
 public:
-    DataUtil();
+    DataUtil(Logger& log);
     string dataframeToString(dataFrame df);
     dataFrame getScenarioData(string request);
     void writeToLog(string message);

@@ -18,7 +18,7 @@ using namespace std;
 class UDPClient
 {
 public:
-    UDPClient();
+    UDPClient(DataUtil *util);
     void open();
     bool send(dataFrame df);
     dataFrame receive();
@@ -26,8 +26,6 @@ public:
     void close();
 private:
     DataUtil* _util;
-
-
     void* cwic;
     int8_t* cwic_socket_addr;
     char* cwic_buffer;

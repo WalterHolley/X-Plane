@@ -19,13 +19,13 @@ udp::endpoint _endpoint;
 boost::array<char, MAX_CWIC_BUFFER> buffer;
 
 //*****PUBLIC METHODS*****//
-UDPClient::UDPClient()
+UDPClient::UDPClient(DataUtil *util)
 {
     //CWIC resource init
     cwic = cwic_init();
     cwic_socket_addr = (int8_t*)malloc(sizeof(int8_t));
     cwic_buffer = (char*)malloc(MAX_CWIC_BUFFER*sizeof(char));
-    _util = new DataUtil();
+    _util = util;
 
     //UDP connection setup
     cwic_cwic_sock_addr(cwic, cwic_socket_addr);
@@ -108,7 +108,6 @@ UDPClient::~UDPClient()
 {
     _socket.close();
     free(cwic);
-    free(_util);
     if(cwic_socket_addr)
         free(cwic_socket_addr);
     if(cwic_buffer)

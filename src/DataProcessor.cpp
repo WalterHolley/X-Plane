@@ -10,10 +10,10 @@ dataFrame df;
 
 //========PUBLIC METHODS===========//
 
-DataProcessor::DataProcessor()
+DataProcessor::DataProcessor(DataUtil *util)
 {
-    _util = new DataUtil();
-    _client = new UDPClient();
+    _util = util;
+    _client = new UDPClient(util);
 }
 
 void DataProcessor::Start()
@@ -52,12 +52,11 @@ void DataProcessor::get()
 
 void DataProcessor::Stop()
 {
-
+    _client->close();
 }
 
 DataProcessor::~DataProcessor()
 {
-    free(_util);
     free(_client);
 }
 

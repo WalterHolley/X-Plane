@@ -9,7 +9,7 @@ time_t t;
 map<int, dataReference> referenceMap = {};
 char* outFilePath;
 FILE* logFile;
-
+Logger _log;
 
 void writeLog(string message)
 {
@@ -229,18 +229,21 @@ dataFrame parse_frame(json::value jsonValue)
     {
         char* logMsg;
         sprintf(logMsg, "an exception occurred in parse_frame: %s", ex.what());
-        writeLog(logMsg);
+        _log.error(logMsg);
+        //writeLog(logMsg);
     }
     return df;
 }
 
 //*****PUBLIC METHODS*****//
-DataUtil::DataUtil()
+DataUtil::DataUtil(Logger& log)
 {
     //logging setup
-    XPLMGetSystemPath(outFilePath);
-    strcat(outFilePath, "TestValues.txt");
-    logFile = fopen(outFilePath, "w");
+    _log = log;
+
+    //XPLMGetSystemPath(outFilePath);
+    //strcat(outFilePath, "TestValues.txt");
+    //logFile = fopen(outFilePath, "w");
 
 
 }

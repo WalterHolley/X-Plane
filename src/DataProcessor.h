@@ -19,7 +19,7 @@ class DataProcessor
         void Start();
         void Stop();
         void get();
-        DataProcessor();
+        DataProcessor(DataUtil *util);
         ~DataProcessor();
     private:
         UDPClient* _client;
