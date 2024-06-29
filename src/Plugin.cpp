@@ -81,7 +81,7 @@ PLUGIN_API int XPluginEnable(void)
         dataProcessor = new DataProcessor(_log);
         _log->info("Plugin enabled.  Starting data collection");
         //open data collection
-        //dataProcessor->Start();
+        dataProcessor->Start();
     }
     catch(std::exception& ex)
     {

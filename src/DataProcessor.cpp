@@ -21,12 +21,13 @@ void DataProcessor::Start()
 {
 
     try{
-        _log->info("Connect and receive initial message");
+
         _client->open();
+        _log->info("Connected. Attempting to receive initial message");
 
         //TODO: thread for receive functionality
-        _log->info("Receive initial data");
         df = _client->receive();
+        _log->info("Received initial data");
         _log->info("Begin data transfer");
         _client->send(df);
         _log->info("Close connection");
