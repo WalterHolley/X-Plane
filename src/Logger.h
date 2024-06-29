@@ -5,17 +5,16 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include<string>
 
-using namespace std;
+#include <string>
 
 class Logger
 {
     public:
         Logger();
-        void debug(string message);
-        void info(string message);
-        void error(string message);
+        void debug(std::string message);
+        void info(std::string message);
+        void error(std::string message);
 };
 
-#endif LOGGER_H
+#endif //LOGGER_H

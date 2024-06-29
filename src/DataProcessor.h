@@ -5,13 +5,10 @@
 #ifndef DATAPROCESSOR_H
 #define DATAPROCESSOR_H
 
-
+#include "Logger.h"
 #include "UDPClient.h"
 #include <string>
 #include <vector>
-
-using namespace std;
-
 
 class DataProcessor
 {
@@ -19,11 +16,10 @@ class DataProcessor
         void Start();
         void Stop();
         void get();
-        DataProcessor(DataUtil *util);
+        DataProcessor(Logger &log);
         ~DataProcessor();
     private:
         UDPClient* _client;
-        DataUtil* _util;
 };
 
 

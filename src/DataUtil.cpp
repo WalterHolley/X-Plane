@@ -11,14 +11,6 @@ char* outFilePath;
 FILE* logFile;
 Logger _log;
 
-void writeLog(string message)
-{
-    char time_string[MAX_TIME];
-
-    strftime(time_string, MAX_TIME, "%mm-%dd-%yyyy", localtime(&t));
-    fprintf(logFile, "%s: %s\n", time_string, message.c_str());
-}
-
 //***JSON PARSING**//
 
 /**
@@ -62,23 +54,26 @@ json::value get_frame(string message)
         if(errorCode)
         {
             sprintf(logMsg, "There was a problem during json parsing: %s", errorCode.what().c_str());
-            writeLog(logMsg);
+            _log.error(logMsg);
         }
 
         parser.finish(errorCode);
 
         if(errorCode)
+        {
             sprintf(logMsg, "There was a wrapping up during json parsing: %s", errorCode.what().c_str());
+            _log.error(logMsg);
+        }
         else
         {
             sprintf(logMsg, "message parsing completed successfully");
+            _log.info(logMsg);
         }
-        writeLog(logMsg);
     }
     catch(std::exception& ex)
     {
         sprintf(logMsg, "There was a problem during json parsing: %s", ex.what());
-        writeLog(logMsg);
+        _log.error(logMsg);
         return nullptr;
     }
 
@@ -95,15 +90,15 @@ json::value get_frame(string message)
  */
 string dataStruct_to_reply_string(dataStruct ds)
 {
-    writeLog("Writing reply string");
+    _log.debug("Writing reply string");
     char buffer[50];
     char* logMsg;
 
     snprintf(buffer, 50, "{\"%s\": %i, \"%s\": \"%s\" }", "index", ds.index, "value", ds.value.c_str());
-    writeLog(buffer);
+    _log.debug(buffer);
     string jsonString = buffer;
     sprintf(logMsg, "outgoing json object: %s\n", buffer);
-    writeLog(buffer);
+    _log.debug(buffer);
     return jsonString;
 }
 
@@ -183,7 +178,7 @@ vector<dataStruct> get_datastructures(json::value val)
     }
     else
     {
-        writeLog("get_datastructures:  value passed was not an array");
+        _log.error("get_datastructures:  value passed was not an array");
     }
 
     return datarefs;
@@ -255,10 +250,6 @@ DataUtil::DataUtil(Logger& log)
  */
 
 
-void DataUtil::writeToLog(string message)
-{
-    writeLog(message);
-}
 
 /**
  * Returns a json string of the dataframe object
@@ -288,14 +279,14 @@ string DataUtil::dataframeToString(dataFrame df)
         }
         else
         {
-            writeLog("json message not completely formed");
+            _log.error("json message not completely formed");
         }
     }
     catch(std::exception& ex)
     {
         char* logMsg;
         sprintf(logMsg, "An exception occurred while building the json message: %s\n", ex.what());
-        writeLog(logMsg);
+        _log.error(logMsg);
     }
 
     return result;

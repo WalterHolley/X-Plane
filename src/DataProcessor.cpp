@@ -1,34 +1,35 @@
 #define MAX_BUFFER 20480
 
 #include "DataProcessor.h"
-
+#include "DataUtil.h"
 
 #include <fstream>
 
 
 dataFrame df;
+Logger _log;
 
 //========PUBLIC METHODS===========//
 
-DataProcessor::DataProcessor(DataUtil *util)
+DataProcessor::DataProcessor(Logger &log)
 {
-    _util = util;
-    _client = new UDPClient(util);
+    _log = log;
+    _client = new UDPClient(log);
 }
 
 void DataProcessor::Start()
 {
 
     try{
-        _util->writeToLog("Connect and receive initial message");
+        _log.info("Connect and receive initial message");
         _client->open();
 
         //TODO: thread for receive functionality
-        _util->writeToLog("Receive initial data");
+        _log.info("Receive initial data");
         df = _client->receive();
-        _util->writeToLog("Begin data transfer");
+        _log.info("Begin data transfer");
         _client->send(df);
-        _util->writeToLog("Close connection");
+        _log.info("Close connection");
         _client->close();
 
 
@@ -37,7 +38,7 @@ void DataProcessor::Start()
     {
         char* message;
         sprintf(message, "An exception occurred: %s", ex.what());
-        _util->writeToLog(message);
+        _log.error(message);
 
     }
 

@@ -15,7 +15,7 @@
 
 #include<XPLM/XPLMProcessing.h>
 #include "DataProcessor.h"
-
+#include "Logger.h"
 
 
 
@@ -23,7 +23,7 @@
 //https://developer.x-plane.com/sdk/XPLMDataAccess/
 
 DataProcessor* dataProcessor;
-DataUtil* util;
+Logger _log;
 
 float PollData()
 {
@@ -47,15 +47,13 @@ void cleanup()
 //***** X-PLANE plugin methods *****//
 PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
 {
-
+    _log = Logger();
     //basic plugin information
     strcpy(name, "BeigeBox");
     strcpy(sig, "com.avidata.recorder");
     strcpy(desc, "Sim Flight Event Recorder for varied data");
 
-    //util = new DataUtil();
-    //util->writeToLog("Data utility Created.");
-    BOOST_LOG_TRIVIAL(debug) << "BeigeBox Plugin Started";
+    _log.info("Brigebox Plugin Started");
     //register callback
     //XPLMRegisterFlightLoopCallback((XPLMFlightLoop_f)PollData, 1.0, NULL);
     return 1;
@@ -78,11 +76,11 @@ PLUGIN_API int XPluginEnable(void)
 
 
 
-    /*
+
     try
     {
-        dataProcessor = new DataProcessor(util);
-        util->writeToLog("Plugin enabled.  Starting data collection");
+        dataProcessor = new DataProcessor(_log);
+        _log.info("Plugin enabled.  Starting data collection");
         //open data collection
         dataProcessor->Start();
     }
@@ -90,10 +88,10 @@ PLUGIN_API int XPluginEnable(void)
     {
         char* message;
         sprintf(message, "There was a problem enabling the plugin: %s", ex.what());
-        util->writeToLog(message);
+        _log.error(message);
         cleanup();
     }
-*/
+
     return 1;
 }
 

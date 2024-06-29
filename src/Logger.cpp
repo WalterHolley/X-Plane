@@ -11,6 +11,7 @@
 //*****PUBLIC METHODS*****//
 
 namespace logging = boost::log;
+using namespace std;
 
 Logger::Logger()
 {

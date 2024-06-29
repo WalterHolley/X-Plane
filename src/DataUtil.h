@@ -3,26 +3,18 @@
 #define DATAUTIL_H
 
 #define MAX_TIME 20
-
 #include<XPLM/XPLMUtilities.h>
 #include<XPLM/XPLMDataAccess.h>
 #include<boost/utility/string_view.hpp>
 #include <string>
-#include <cstring>
 #include <iostream>
 #include <time.h>
 #include <map>
 #include<vector>
 #include "Logger.h"
 
-
-
-
-
-
-using namespace std;
 using namespace boost;
-
+using namespace std;
 
 struct dataStruct {
     string dref;
@@ -65,7 +57,6 @@ public:
     DataUtil(Logger& log);
     string dataframeToString(dataFrame df);
     dataFrame getScenarioData(string request);
-    void writeToLog(string message);
     ~DataUtil();
 
 
