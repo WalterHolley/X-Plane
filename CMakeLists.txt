@@ -45,12 +45,13 @@ endif()
 
 if(WIN32)
     message("Building for windows")
-    add_definitions(-DIBM=1)
+    add_definitions(-DIBM=1 -DBOOST_ALL_DYN_LINK=1)
     option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
     target_link_libraries( xplplugin
             -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/Libraries/Win/XPLM_64.lib"
             -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/Libraries/Win/XPWidgets_64.lib"
             -static -static-libgcc -static-libstdc++ "${PROJECT_SOURCE_DIR}/SDK/cwic/lib/cwic_lib.dll"
+
             "ws2_32")
 elseif (APPLE)
     add_definitions(-DAPL=1)

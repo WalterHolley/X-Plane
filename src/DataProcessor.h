@@ -16,10 +16,11 @@ class DataProcessor
         void Start();
         void Stop();
         void get();
-        DataProcessor(Logger &log);
+        DataProcessor(Logger* log);
         ~DataProcessor();
     private:
         UDPClient* _client;
+        Logger* _log;
 };
 
 

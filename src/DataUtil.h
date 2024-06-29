@@ -54,10 +54,12 @@ const string UNITS_KEY = "units";
 
 class DataUtil{
 public:
-    DataUtil(Logger& log);
+    DataUtil(Logger* log);
     string dataframeToString(dataFrame df);
     dataFrame getScenarioData(string request);
     ~DataUtil();
+
+
 
 
 

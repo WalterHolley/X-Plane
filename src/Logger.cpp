@@ -4,42 +4,61 @@
 
 #include "Logger.h"
 #include <iostream>
+#include <iomanip>
 #include <fstream>
-#include <boost/log/trivial.hpp>
-#include <boost/log/attributes.hpp>
-#include <boost/log/utility/setup/from_stream.hpp>
+#include <ctime>
+#include <chrono>
 //*****PUBLIC METHODS*****//
 
-namespace logging = boost::log;
+
 using namespace std;
 
+ofstream logFile;
+time_t t;
 Logger::Logger()
 {
     try
     {
-        ifstream settingFile("settings.txt");
-        logging::init_from_stream(settingFile);
+        logFile.open("BB_log.txt", ios_base::app);
+        info("Logging Initialized");
     }
     catch(exception& ex)
     {
-        cout << "Long instancing failed: " << ex.what() << endl;
+        cout << "Log instancing failed: " << ex.what() << endl;
     }
+
+}
+
+void writeToLog(string level, string &message)
+{
+    char logEntry[512];
+    stringstream  ss;
+    auto current_time = chrono::system_clock::now();
+    t = chrono::system_clock::to_time_t(current_time);
+    ss << put_time(localtime(&t), "%m-%d-%Y:%X");
+    sprintf(logEntry, "[%s]:%s=>%s", level.c_str(), ss.str().c_str(), message.c_str());
+    if(logFile.is_open())
+        logFile << logEntry << endl;
 
 }
 
 void Logger::debug(string message)
 {
-    BOOST_LOG_TRIVIAL(debug) << message;
+    writeToLog(DEBUG_LEVEL, message);
 }
 
 void Logger::info(string message)
 {
-    BOOST_LOG_TRIVIAL(info) << message;
+    writeToLog(INFO_LEVEL, message);
 
 }
 
 void Logger::error(string message)
 {
-    BOOST_LOG_TRIVIAL(error) << message;
+    writeToLog(ERROR_LEVEL, message);
 }
 
+Logger::~Logger()
+{
+    logFile.close();
+}
