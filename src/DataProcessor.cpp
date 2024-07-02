@@ -13,35 +13,40 @@ dataFrame df;
 
 DataProcessor::DataProcessor(Logger* log)
 {
+    _started = false;
     _log = log;
     _client = new UDPClient(log);
 }
 
 void DataProcessor::Start()
 {
-
-    try{
-
-        _client->open();
-        _log->info("Connected. Attempting to receive initial message");
-
-        //TODO: thread for receive functionality
-        df = _client->receive();
-        _log->info("Received initial data");
-        _log->info("Begin data transfer");
-        _client->send(df);
-        _log->info("Close connection");
-        _client->close();
-
-
-    }
-    catch(std::exception& ex)
+    if(!_started)
     {
-        char* message;
-        sprintf(message, "An exception occurred: %s", ex.what());
-        _log->error(message);
+        try
+        {
 
+            _client->open();
+            _log->info("Connected. Attempting to receive initial message");
+
+            //TODO: thread for receive functionality
+            df = _client->receive();
+            _log->info("Received initial data");
+            _log->info("Begin data transfer");
+            _client->send(df);
+            _log->info("Close connection");
+            _client->close();
+            _started = true;
+
+        }
+        catch(std::exception& ex)
+        {
+            char* message;
+            sprintf(message, "An exception occurred: %s", ex.what());
+            _log->error(message);
+            _started = false;
+        }
     }
+
 
 }
 
@@ -55,6 +60,12 @@ void DataProcessor::get()
 void DataProcessor::Stop()
 {
     _client->close();
+    _started = false;
+}
+
+bool  DataProcessor::hasStarted()
+{
+    return _started;
 }
 
 DataProcessor::~DataProcessor()

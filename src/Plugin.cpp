@@ -41,7 +41,7 @@ void init()
 
 void cleanup()
 {
-    //free(dataProcessor);
+    free(dataProcessor);
     free(_log);
 }
 
@@ -54,7 +54,7 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
     strcpy(sig, "com.avidata.recorder");
     strcpy(desc, "Sim Flight Event Recorder for varied data");
 
-    _log->info("Beigebox Plugin Started");
+    _log->info("Beigebox Plugin Starting");
     //register callback
     //XPLMRegisterFlightLoopCallback((XPLMFlightLoop_f)PollData, 1.0, NULL);
     return 1;
@@ -76,12 +76,20 @@ PLUGIN_API void XPluginStop(void)
 
 PLUGIN_API int XPluginEnable(void)
 {
+    int result = 0;
+
     try
     {
         dataProcessor = new DataProcessor(_log);
         _log->info("Plugin enabled.  Starting data collection");
         //open data collection
         dataProcessor->Start();
+
+        if(dataProcessor->hasStarted())
+            result = 1;
+        else
+            throw std::runtime_error("See log for details");
+
     }
     catch(std::exception& ex)
     {
@@ -91,7 +99,7 @@ PLUGIN_API int XPluginEnable(void)
         cleanup();
     }
 
-    return 1;
+    return result;
 }
 
 PLUGIN_API void XPluginDisable(void)

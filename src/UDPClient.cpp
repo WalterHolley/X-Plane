@@ -24,8 +24,10 @@ UDPClient::UDPClient(Logger* log)
     cwic_socket_addr = (int8_t*)malloc(sizeof(int8_t));
     cwic_buffer = (char*)malloc(MAX_CWIC_BUFFER*sizeof(char));
     _util = new DataUtil(log);
+
     //UDP connection setup
     cwic_cwic_sock_addr(cwic, cwic_socket_addr);
+    _log->debug("Socket address: " + std::string((char* )cwic_socket_addr));
     memcpy(cwic_buffer, &cwic_socket_addr, sizeof(cwic_socket_addr));
 
 }

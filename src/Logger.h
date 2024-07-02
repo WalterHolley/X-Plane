@@ -17,9 +17,11 @@ class Logger
         void error(std::string message);
         ~Logger();
     private:
+       // void writeToLog(const char* &level, std::string &message);
         const char* DEBUG_LEVEL = "DEBUG";
         const char* INFO_LEVEL = "INFO";
         const char* ERROR_LEVEL = "ERROR";
+
 };
 
 #endif //LOGGER_H
