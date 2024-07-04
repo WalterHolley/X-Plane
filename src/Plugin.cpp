@@ -8,7 +8,6 @@
 #define XPLM300
 #define XPLM400
 
-#include <boost/log/core.hpp>
 #include<XPLM/XPLMProcessing.h>
 #include "DataProcessor.h"
 #include "Logger.h"
@@ -23,19 +22,28 @@ Logger* _log;
 
 float PollData()
 {
-    if(dataProcessor->hasStarted())
+    float result = 0.0;
+    if(dataProcessor->hasFailed())
+    {
+        //do nothing
+        result = -1.0;
+    }
+    else if(dataProcessor->hasStarted())
     {
 
         //open data collection
         _log->info("Retrieving data");
         dataProcessor->get();
+        result = 1.0;
     }
     else
     {
         _log->info("Initing data collection process.");
         dataProcessor->Start();
+        result  = 1.0;
     }
-    return 1.0;
+
+    return result;
 }
 
 void cleanup()
@@ -92,10 +100,10 @@ PLUGIN_API int XPluginEnable(void)
     }
     catch(std::exception& ex)
     {
-        char* message;
-        sprintf(message, "There was a problem enabling the plugin: %s", ex.what());
-        _log->error(message);
-        cleanup();
+       string message("There was a problem enabling the plugin: ");
+       message.append(ex.what());
+       _log->error(message);
+       cleanup();
     }
 
     return result;
@@ -104,7 +112,7 @@ PLUGIN_API int XPluginEnable(void)
 PLUGIN_API void XPluginDisable(void)
 {
 
-    if(dataProcessor)
+    if(dataProcessor && !dataProcessor->hasFailed())
     {
         dataProcessor->Stop();
     }

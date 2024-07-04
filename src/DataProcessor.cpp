@@ -14,6 +14,7 @@ dataFrame df;
 DataProcessor::DataProcessor(Logger* log)
 {
     _started = false;
+    _dpFailed = false;
     _log = log;
     _client = new UDPClient(log);
 }
@@ -34,13 +35,13 @@ void DataProcessor::Start()
                 _log->info("Connected. Attempting to receive initial message");
 
                 //TODO: thread for receive functionality
-                df = _client->receive();
+                this->get();
                 _log->info("Received initial data");
-                _log->info("Begin data transfer");
-                _client->send(df);
-                _log->info("Close connection");
-                _client->close();
                 _started = true;
+            }
+            else
+            {
+                _dpFailed = true;
             }
 
 
@@ -51,6 +52,7 @@ void DataProcessor::Start()
             message.append(ex.what());
             _log->error(message);
             _started = false;
+            _dpFailed = true;
         }
     }
 
@@ -66,13 +68,21 @@ void DataProcessor::get()
 
 void DataProcessor::Stop()
 {
-    _client->close();
-    _started = false;
+    if(_client->connectionIsOpen())
+    {
+        _client->close();
+        _started = false;
+    }
+
 }
 
 bool  DataProcessor::hasStarted()
 {
     return _started;
+}
+bool DataProcessor::hasFailed()
+{
+    return _dpFailed;
 }
 
 DataProcessor::~DataProcessor()

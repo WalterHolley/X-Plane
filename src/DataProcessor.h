@@ -15,6 +15,7 @@ class DataProcessor
     public:
         void Start();
         bool hasStarted();
+        bool hasFailed();
         void Stop();
         void get();
         DataProcessor(Logger* log);
@@ -23,6 +24,7 @@ class DataProcessor
         UDPClient* _client;
         Logger* _log;
         bool _started;
+        bool _dpFailed;
 };
 
 
