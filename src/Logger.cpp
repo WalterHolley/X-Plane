@@ -10,17 +10,18 @@
 #include <chrono>
 #include <mutex>
 #include <future>
+#include <boost/format.hpp>
 //*****PUBLIC METHODS*****//
 
 
 using namespace std;
+using boost::format;
 
 ofstream logFile;
 time_t t;
-mutex log_mutex;
-future<void> info_future;
-future<void> debug_future;
-future<void> error_future;
+
+
+
 
 Logger::Logger()
 {
@@ -39,13 +40,11 @@ Logger::Logger()
 
 void writeToLog(const char* &level, string &message)
 {
-    const lock_guard<mutex> lock(log_mutex);
-    char* logEntry;
-    stringstream  ss;
-    auto current_time = chrono::system_clock::now();
-    t = chrono::system_clock::to_time_t(current_time);
+    string logEntry;
+    stringstream ss;
+    t = chrono::system_clock::to_time_t(chrono::system_clock::now());
     ss << put_time(localtime(&t), "%m-%d-%Y:%X");
-    sprintf(logEntry, "[%s]:%s=>%s", level, ss.str().c_str(), message.c_str());
+    logEntry = str(format("[%s]:%s=>%s") % level % ss.str() % message);
     if(logFile.is_open())
         logFile << logEntry << endl;
 
@@ -53,17 +52,20 @@ void writeToLog(const char* &level, string &message)
 
 void Logger::debug(string message)
 {
-    debug_future = async(launch::async, [msg = &message,this](){writeToLog(DEBUG_LEVEL, (string &)msg);});
+    writeToLog(DEBUG_LEVEL, message);
+
 }
 
 void Logger::info(string message)
 {
-    info_future = async(launch::async, [msg = &message,this](){writeToLog(INFO_LEVEL, (string &)msg);});
+    writeToLog(INFO_LEVEL, message);
+    //nfo_future = async(launch::async, [msg = &message,this](){writeToLog(INFO_LEVEL, (string &)msg);});
 }
 
 void Logger::error(string message)
 {
-    error_future = async(launch::async,[ msg = &message, this](){ writeToLog( ERROR_LEVEL, (string &)msg);});
+    writeToLog(ERROR_LEVEL, message);
+    //error_future = async(launch::async,[ msg = &message, this](){ writeToLog( ERROR_LEVEL, (string &)msg);});
 
 }
 
@@ -71,9 +73,6 @@ Logger::~Logger()
 {
     //wait for all threads to finish
     info("=====LOGGING TERMINATED=====");
-    debug_future.wait();
-    info_future.wait();
-    error_future.wait();
 
     //close file
     logFile.close();

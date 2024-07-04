@@ -8,11 +8,7 @@
 #define XPLM300
 #define XPLM400
 
-#include <string.h>
-#include<boost/log/trivial.hpp>
 #include <boost/log/core.hpp>
-#include <boost/log/expressions.hpp>
-
 #include<XPLM/XPLMProcessing.h>
 #include "DataProcessor.h"
 #include "Logger.h"
@@ -27,16 +23,19 @@ Logger* _log;
 
 float PollData()
 {
-    if(dataProcessor)
+    if(dataProcessor->hasStarted())
     {
+
+        //open data collection
+        _log->info("Retrieving data");
         dataProcessor->get();
     }
+    else
+    {
+        _log->info("Initing data collection process.");
+        dataProcessor->Start();
+    }
     return 1.0;
-}
-
-void init()
-{
-
 }
 
 void cleanup()
@@ -49,29 +48,33 @@ void cleanup()
 PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
 {
     _log = new Logger();
+    dataProcessor = new DataProcessor(_log);
     //basic plugin information
     strcpy(name, "BeigeBox");
     strcpy(sig, "com.avidata.recorder");
     strcpy(desc, "Sim Flight Event Recorder for varied data");
 
-    _log->info("Beigebox Plugin Starting");
+
     //register callback
-    //XPLMRegisterFlightLoopCallback((XPLMFlightLoop_f)PollData, 1.0, NULL);
+    XPLMRegisterFlightLoopCallback((XPLMFlightLoop_f)PollData, 1.0, NULL);
     return 1;
 }
 
 PLUGIN_API void XPluginStop(void)
 {
     //end network connection
-    //destroy callback
-    cleanup();
-    /*
-    XPLMUnregisterFlightLoopCallback((XPLMFlightLoop_f)PollData, NULL);
-    dataProcessor->Stop();
-    free(dataProcessor);
-    free(util);
+    if(dataProcessor->hasStarted())
+    {
+        dataProcessor->Stop();
+    }
 
-*/
+    //destroy callback
+    XPLMUnregisterFlightLoopCallback((XPLMFlightLoop_f)PollData, NULL);
+    cleanup();
+
+
+
+
 }
 
 PLUGIN_API int XPluginEnable(void)
@@ -80,15 +83,11 @@ PLUGIN_API int XPluginEnable(void)
 
     try
     {
-        dataProcessor = new DataProcessor(_log);
-        _log->info("Plugin enabled.  Starting data collection");
-        //open data collection
-        dataProcessor->Start();
-
-        if(dataProcessor->hasStarted())
+        if(_log && dataProcessor)
+        {
+            _log->info("Log started. Plugin enabled");
             result = 1;
-        else
-            throw std::runtime_error("See log for details");
+        }
 
     }
     catch(std::exception& ex)
