@@ -24,24 +24,31 @@ void DataProcessor::Start()
     {
         try
         {
+            if(!_client->connectionIsOpen())
+            {
+                _client->open();
+            }
 
-            _client->open();
-            _log->info("Connected. Attempting to receive initial message");
+            if(_client->connectionIsOpen())
+            {
+                _log->info("Connected. Attempting to receive initial message");
 
-            //TODO: thread for receive functionality
-            df = _client->receive();
-            _log->info("Received initial data");
-            _log->info("Begin data transfer");
-            _client->send(df);
-            _log->info("Close connection");
-            _client->close();
-            _started = true;
+                //TODO: thread for receive functionality
+                df = _client->receive();
+                _log->info("Received initial data");
+                _log->info("Begin data transfer");
+                _client->send(df);
+                _log->info("Close connection");
+                _client->close();
+                _started = true;
+            }
+
 
         }
         catch(std::exception& ex)
         {
-            char* message;
-            sprintf(message, "An exception occurred: %s", ex.what());
+            string message("An exception occurred during data processing: ");
+            message.append(ex.what());
             _log->error(message);
             _started = false;
         }

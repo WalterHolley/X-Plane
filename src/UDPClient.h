@@ -22,6 +22,7 @@ class UDPClient
 public:
     UDPClient(Logger* log);
     void open();
+    bool connectionIsOpen();
     bool send(dataFrame df);
     dataFrame receive();
     ~UDPClient();
@@ -32,6 +33,7 @@ private:
     char* cwic_buffer;
     DataUtil* _util;
     Logger* _log;
+    bool _connectionIsOpen;
 
 };
 

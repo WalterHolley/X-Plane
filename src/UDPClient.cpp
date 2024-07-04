@@ -24,6 +24,7 @@ UDPClient::UDPClient(Logger* log)
     cwic_socket_addr = (int8_t*)malloc(sizeof(int8_t));
     cwic_buffer = (char*)malloc(MAX_CWIC_BUFFER*sizeof(char));
     _util = new DataUtil(log);
+    _connectionIsOpen = false;
 
     //UDP connection setup
     cwic_cwic_sock_addr(cwic, cwic_socket_addr);
@@ -34,14 +35,24 @@ UDPClient::UDPClient(Logger* log)
 
 void UDPClient::open()
 {
-    boost::system::error_code ec;
-    _endpoint = udp::endpoint(address::from_string(cwic_buffer), REMOTE_PORT);
-    _socket.open(udp::v4(), ec);
+   try
+   {
+       if(!_connectionIsOpen)
+       {
+           _endpoint = udp::endpoint(address::from_string(cwic_buffer), REMOTE_PORT);
+           _socket.open(udp::v4());
+           _connectionIsOpen = true;
+       }
 
-    if(ec)
-    {
-        _log->error("There was a problem opening a socket to cwic: " + ec.message());
-    }
+   }
+   catch(std::exception& ex)
+   {
+       string message("Could not open the cwic connection: ");
+       message.append(ex.what());
+       _log->error(message);
+   }
+
+
 }
 
 void UDPClient::close()
@@ -50,6 +61,7 @@ void UDPClient::close()
     {
         _socket.close();
         _log->info("cwic connection closed");
+        _connectionIsOpen = false;
     }
 }
 
@@ -102,6 +114,11 @@ dataFrame UDPClient::receive()
     }
 
     return returnValue;
+}
+
+bool UDPClient::connectionIsOpen()
+{
+    return  _connectionIsOpen;
 }
 
 UDPClient::~UDPClient()

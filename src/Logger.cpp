@@ -37,6 +37,7 @@ Logger::Logger()
     }
 
 }
+//TODO: Work on async calls for log management
 
 void writeToLog(const char* &level, string &message)
 {
