@@ -5,7 +5,7 @@ file(GLOB HEADERS
 set(PUBLIC_SOURCE
 "${CMAKE_CURRENT_LIST_DIR}/Plugin.cpp"
 )
-get_filename_component(PREVIOUS_DIR ./ ABSOLUTE)
+get_filename_component(PREVIOUS_DIR . ABSOLUTE)
 set(PRIVATE_SOURCE
         "${PREVIOUS_DIR}/SDK/cwic/include/c_headers.h"
         "${CMAKE_CURRENT_LIST_DIR}/DataUtil.h"
