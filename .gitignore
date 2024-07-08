@@ -50,7 +50,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-/BeigeBoxPlugin/SDK/
+/SDK/
 /boost/
 /boost/
 /BeigeBox/
@@ -61,6 +61,7 @@ dkms.conf
 /Makefile
 /CMakeFiles/
 /cmake-build-release/
-/BeigeBoxPlugin/SDK/
+/SDK/
 /BeigeBoxPlugin/cmake-build-debug/
 /BeigeBoxPlugin/cmake-build-release/
+/SDK/
