@@ -7,3 +7,4 @@ set(Boost_DEBUG ON)
 project("BeigeBox Suite")
 
 add_subdirectory(BeigeBoxPlugin)
+add_subdirectory(BeigeBoxServer)

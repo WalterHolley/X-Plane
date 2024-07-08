@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-set(PROJECT_NAME "XStateReader")
+set(PROJECT_NAME "BBServer")
 set(PROJECT_SOURCE_DIR ..)
 set(CMAKE_LIBRARY_TYPE SHARED)
 set(CMAKE_CXX_STANDARD ${CMAKE_LANGUAGE_VERSION})
@@ -7,13 +7,12 @@ set(BOOST_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED FALSE)
 set(Boost_DEBUG ON)
 
-
-set(XPLANE_INCLUDE_DIR "../SDK/xplane")
+set(XPLANE_INCLUDE_DIR "SDK/xplane")
 
 if(WIN32)
-    set(CWIC_LIB ../SDK/cwic/lib/cwic_lib.dll)
+    set(CWIC_LIB SDK/cwic/lib/cwic_lib.dll)
 else ()
-    set(CWIC_LIB ../SDK/cwic/lib/libcwic_lib.so)
+    set(CWIC_LIB SDK/cwic/lib/libcwic_lib.so)
 endif (WIN32)
 
 find_package(Boost 1.82.0 REQUIRED)
@@ -36,8 +35,6 @@ include_directories(src)
 include(src/CMakeLists.txt)
 
 
-#add_definitions(-DXPLM400=1 -DXPLM303=1 -DXPLM301=1 -DXPLM300=1 -DXPLM210=1 -DXPLM200=1)
-
 if (MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
@@ -47,7 +44,7 @@ if(WIN32)
     message("Building for windows")
     add_definitions(-DIBM=1 -DBOOST_ALL_DYN_LINK=1)
     option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
-    target_link_libraries( xplplugin
+    target_link_libraries( bbserver
             -static -static-libgcc -static-libstdc++ "../SDK/Libraries/Win/XPLM_64.lib"
             -static -static-libgcc -static-libstdc++ "../SDK/Libraries/Win/XPWidgets_64.lib"
             -static -static-libgcc -static-libstdc++ "../SDK/cwic/lib/cwic_lib.dll"
@@ -62,18 +59,17 @@ else ()
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "..")
     message("Creating build for Linux")
     message(..)
-    target_link_libraries( xplplugin PRIVATE "${PROJECT_SOURCE_DIR}/SDK/Libraries/libcwic_lib.so"
+    target_link_libraries( bbserver PRIVATE "${PROJECT_SOURCE_DIR}/SDK/Libraries/libcwic_lib.so"
             -shared -rdynamic -nodefaultlibs -undefined_warning "${PROJECT_SOURCE_DIR}/SDK/Libraries/libXPLM_64.so")
 endif (WIN32)
 
-set_target_properties(xplplugin PROPERTIES
+set_target_properties(bbserver PROPERTIES
         PREFIX ""
-        OUTPUT_NAME "../BeigeBox"
-        SUFFIX ".xpl")
+        OUTPUT_NAME "../server")
 
 
 if(WIN32)
-    install(TARGETS xplplugin RUNTIME DESTINATION ../BeigeBox/win_x64)
+    install(TARGETS bbserver RUNTIME DESTINATION ../BeigeBox/win_x64)
 else()
-    install(TARGETS xplplugin LIBRARY DESTINATION "${PROJECT_SOURCE_DIR}/BeigeBox/lin_x64/" )
+    install(TARGETS bbserver LIBRARY DESTINATION "${PROJECT_SOURCE_DIR}/BeigeBox/lin_x64/" )
 endif (WIN32)
