@@ -1,17 +1,11 @@
 cmake_minimum_required(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-
+set(CMAKE_LIBRARY_TYPE SHARED)
 set(BOOST_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED FALSE)
 set(Boost_DEBUG ON)
 set(XPLANE_INCLUDE_DIR "../SDK/xplane")
 get_filename_component(PROJECT_ROOT .. ABSOLUTE)
 project(BBPlugin)
-
-if(WIN32)
-    set(CWIC_LIB ../SDK/cwic/lib/cwic_lib.dll)
-else ()
-    set(CWIC_LIB ../SDK/cwic/lib/libcwic_lib.so)
-endif (WIN32)
 
 find_package(Boost 1.82.0 REQUIRED)
 
@@ -33,7 +27,7 @@ include_directories(src/include)
 include_directories(../SDK/cwic/include)
 
 file(GLOB HEADERS
-        src/include/*.h)
+        src/include/*.hpp)
 
 set(PUBLIC_SOURCE
         "src/Plugin.cpp"
@@ -70,7 +64,6 @@ if(WIN32)
             -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/XPLM_64.lib
             -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/XPWidgets_64.lib
             -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/cwic/lib/cwic_lib.dll
-
             "ws2_32")
 elseif (APPLE)
     add_definitions(-DAPL=1)
@@ -84,7 +77,7 @@ endif (WIN32)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
         PREFIX ""
-        OUTPUT_NAME "../BeigeBox"
+        OUTPUT_NAME "BeigeBox"
         SUFFIX ".xpl")
 
 
