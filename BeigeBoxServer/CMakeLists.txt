@@ -1,11 +1,5 @@
-set(XPLANE_INCLUDE_DIR "SDK/xplane")
-
-if(WIN32)
-    set(CWIC_LIB SDK/cwic/lib/cwic_lib.dll)
-else ()
-    set(CWIC_LIB SDK/cwic/lib/libcwic_lib.so)
-endif (WIN32)
-
+cmake_minimum_required(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+get_filename_component(PROJECT_ROOT .. ABSOLUTE)
 find_package(Boost 1.82.0 REQUIRED)
 
 
@@ -19,10 +13,6 @@ if(NOT Boost_FOUND)
 endif ()
 
 project(BBServer)
-link_directories(../SDK/Libraries)
-
-include_directories(${XPLANE_INCLUDE_DIR})
-
 
 if (MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -37,7 +27,6 @@ elseif (APPLE)
     message("Build for apple")
 else ()
     message("Creating build for Linux")
-    message(..)
 
 endif (WIN32)
 
@@ -47,7 +36,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 
 if(WIN32)
-    install(TARGETS ${PROJECT_NAME} DESTINATION ../BeigeBox/win_x64)
+    install(TARGETS ${PROJECT_NAME} DESTINATION ${PROJECT_ROOT}/BeigeBox/win_x64)
 else()
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "${PROJECT_SOURCE_DIR}/BeigeBox/lin_x64/" )
+    install(TARGETS ${PROJECT_NAME} DESTINATION "${PROJECT_SOURCE_DIR}/BeigeBox/lin_x64/" )
 endif (WIN32)
