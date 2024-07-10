@@ -9,8 +9,8 @@
 #define XPLM400
 
 #include<XPLM/XPLMProcessing.h>
-#include "DataProcessor.h"
-#include "Logger.h"
+#include "include/DataProcessor.h"
+#include "include/Logger.h"
 
 
 

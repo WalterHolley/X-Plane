@@ -14,7 +14,8 @@
 
 #include "Logger.h"
 #include "DataUtil.h"
-#include "../SDK/cwic/include/c_headers.h"
+#include <c_headers.h>
+
 
 
 class UDPClient
