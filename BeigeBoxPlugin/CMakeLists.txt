@@ -1,14 +1,11 @@
 cmake_minimum_required(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-set(PROJECT_NAME "XStateReader")
-set(PROJECT_SOURCE_DIR ..)
-set(CMAKE_LIBRARY_TYPE SHARED)
-set(CMAKE_CXX_STANDARD ${CMAKE_LANGUAGE_VERSION})
+
 set(BOOST_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED FALSE)
 set(Boost_DEBUG ON)
-
-
 set(XPLANE_INCLUDE_DIR "../SDK/xplane")
+get_filename_component(PROJECT_ROOT .. ABSOLUTE)
+project(BBPlugin)
 
 if(WIN32)
     set(CWIC_LIB ../SDK/cwic/lib/cwic_lib.dll)
@@ -28,12 +25,34 @@ if(NOT Boost_FOUND)
     message("Could not find boost at: ${BOOST_INCLUDE_DIR}")
 endif ()
 
-project(${PROJECT_NAME})
+
 link_directories(../SDK/Libraries)
 
 include_directories(${XPLANE_INCLUDE_DIR})
-include_directories(src)
-include(src/CMakeLists.txt)
+include_directories(src/include)
+include_directories(../SDK/cwic/include)
+
+file(GLOB HEADERS
+        src/include/*.h)
+
+set(PUBLIC_SOURCE
+        "src/Plugin.cpp"
+        )
+
+set(PRIVATE_SOURCE
+        "${PROJECT_ROOT}/SDK/cwic/include/c_headers.h"
+        "src/include/DataUtil.h"
+        "src/include/DataProcessor.h"
+        "src/include/UDPClient.h"
+        "src/include/Logger.h"
+        "src/UDPClient.cpp"
+        "src/DataUtil.cpp"
+        "src/DataProcessor.cpp"
+        "src/Logger.cpp"
+        )
+
+add_library(${PROJECT_NAME} SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE})
+
 
 
 #add_definitions(-DXPLM400=1 -DXPLM303=1 -DXPLM301=1 -DXPLM300=1 -DXPLM210=1 -DXPLM200=1)
@@ -47,33 +66,30 @@ if(WIN32)
     message("Building for windows")
     add_definitions(-DIBM=1 -DBOOST_ALL_DYN_LINK=1)
     option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
-    target_link_libraries( xplplugin
-            -static -static-libgcc -static-libstdc++ "../SDK/Libraries/Win/XPLM_64.lib"
-            -static -static-libgcc -static-libstdc++ "../SDK/Libraries/Win/XPWidgets_64.lib"
-            -static -static-libgcc -static-libstdc++ "../SDK/cwic/lib/cwic_lib.dll"
+    target_link_libraries( ${PROJECT_NAME}
+            -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/XPLM_64.lib
+            -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/XPWidgets_64.lib
+            -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/cwic/lib/cwic_lib.dll
 
             "ws2_32")
 elseif (APPLE)
     add_definitions(-DAPL=1)
 else ()
     add_definitions(-DLIN=1)
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "..")
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "..")
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "..")
     message("Creating build for Linux")
     message(..)
-    target_link_libraries( xplplugin PRIVATE "${PROJECT_SOURCE_DIR}/SDK/Libraries/libcwic_lib.so"
+    target_link_libraries( ${PROJECT_NAME} PRIVATE "${PROJECT_ROOT}/SDK/Libraries/libcwic_lib.so"
             -shared -rdynamic -nodefaultlibs -undefined_warning "${PROJECT_SOURCE_DIR}/SDK/Libraries/libXPLM_64.so")
 endif (WIN32)
 
-set_target_properties(xplplugin PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
         PREFIX ""
         OUTPUT_NAME "../BeigeBox"
         SUFFIX ".xpl")
 
 
 if(WIN32)
-    install(TARGETS xplplugin RUNTIME DESTINATION ../BeigeBox/win_x64)
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${PROJECT_ROOT}/BeigeBox/win_x64)
 else()
-    install(TARGETS xplplugin LIBRARY DESTINATION "${PROJECT_SOURCE_DIR}/BeigeBox/lin_x64/" )
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "${PROJECT_SOURCE_DIR}/BeigeBox/lin_x64/" )
 endif (WIN32)
