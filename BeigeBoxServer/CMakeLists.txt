@@ -18,7 +18,7 @@ if (MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/XPlaneListener.cpp src/include/XPlaneListener.h src/include/XPlaneConnection.h src/XPlaneConnection.cpp)
 
 if(WIN32)
     message("Building for windows")
