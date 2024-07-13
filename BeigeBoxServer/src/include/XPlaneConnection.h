@@ -6,6 +6,9 @@
 #define XPLANECONNECTION_H
 
 #include<boost/asio.hpp>
+#include<boost/bind.hpp>
+#include<boost/shared_ptr.hpp>
+#include<boost/enable_shared_from_this.hpp>
 
 class XPlaneConnection : public boost::enable_shared_from_this<XPlaneConnection>
 {
@@ -17,7 +20,7 @@ class XPlaneConnection : public boost::enable_shared_from_this<XPlaneConnection>
     private:
         boost::asio::ip::tcp::socket _socket;
         XPlaneConnection(boost::asio::io_service& io_service) : _socket(io_service);
-        void write();
+        void handleWriteError(boost::system::error_code& error, size_t bytesXferred);
 };
 
 
