@@ -4,8 +4,11 @@
 
 #include "include/XPlaneConnection.h"
 #include <iostream>
+#include <fstream>
+#include <String>
 
 using boost::asio::ip::tcp;
+using namespace std;
 
 //*****CLASS METHODS*****//
 
@@ -31,10 +34,34 @@ void XPlaneConnection::handleWriteError(boost::system::error_code& error, size_t
 
 void XPlaneConnection::start()
 {
-     boost::asio::async_write(_socket, boost::asio::buffer(),
-                              boost::bind(&XPlaneConnection::handleWriteError, shared_from_this(),
-                                          boost::asio::placeholders::error,
-                                          boost::asio::placeholders::bytes_transferred))
+    boost::asio::streambuf readBuffer;
+    boost::asio::read(_socket, readBuffer);
+
+
+
 }
+
+void XPlaneConnection::handleMessage(boost::asio::streambuf& buff)
+{
+     istream istream(&buff);
+     ifstream refFile("../res/datarefs.json");
+     string msg;
+     istream >> msg;
+     cout << msg << std::endl;
+
+     //send dataref schema
+     if(refFile.is_open())
+     {
+         while(getline(refFile, msg) && _socket.is_open())
+         {
+             boost::asio::async_write(_socket, msg,);
+         }
+     }
+
+
+}
+//********END CLASS METHODS***********//
+
+
 
 

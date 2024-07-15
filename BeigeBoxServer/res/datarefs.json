@@ -1,0 +1,596 @@
+{
+    "version": "0.9.0",
+    "notes": "All values for a Beechcraft C90 flight",
+    "state": [
+        {
+            "dref": "sim/flightmodel/position/latitude",
+            "description": "aircraft latitude deg/min north",
+	    "index": 0,
+            "units": "deg/min",
+            "freq": 1,
+            "rounding": 6
+        },
+        {
+            "dref": "sim/flightmodel/position/longitude",
+            "description": "aircraft longitude east",
+	    "index": 1,
+            "units": "deg/min",
+            "freq": 1,
+            "rounding": 6
+        },
+        {
+            "dref": "sim/flightmodel/misc/h_ind",
+            "description": "indicated altitude",
+	    "index": 2,
+            "units": "feet",
+            "freq": 1,
+            "rounding": 0
+        },
+        {
+            "dref": "sim/flightmodel/position/mag_psi",
+            "description": "magnetic heading (real)",
+	    "index": 3,
+            "units": "deg",
+            "freq": 1,
+            "rounding": 1
+        },
+        {
+            "dref": "sim/cockpit/gauges/indicators/slip_deg",
+            "description": "ball slip indication",
+	    "index": 4,
+            "units": "deg",
+            "freq": 1,
+            "rounding": 1
+        },
+        {
+            "dref": "sim/cockpit2/gauges/indicators/airspeed_kts_pilot",
+            "description": "airspeed indicated",
+	    "index": 5,
+            "units": "knots",
+            "freq": 1,
+            "rounding": 1
+        },
+        {
+            "dref": "sim/cockpit/misc/over_outer_marker",
+            "description": "outer marker indication",
+	    "index": 6,
+            "units": "bool",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/cockpit/misc/over_middle_marker",
+            "description": "middle marker indication",
+	    "index": 7,
+            "units": "bool",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/cockpit/misc/barometer_setting",
+            "description": "barometer setting",
+	    "index": 8,
+            "units": "inHg",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/flightmodel/forces/g_nrml",
+            "description": "g-force vertical (seat)",
+	    "index": 9,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/flightmodel/position/vh_ind",
+            "description": "vertical speed",
+	    "index": 10,
+            "units": "m/s",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/flightmodel/position/true_theta",
+            "description": "pitch relative to earth",
+	    "index": 11,
+            "units": "deg",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/flightmodel/position/true_phi",
+            "description": "roll relative to earth",
+	    "index": 12,
+            "units": "deg",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/flightmodel/position/alpha",
+            "description": "angle of attack",
+	    "index": 13,
+            "units": "deg",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/flightmodel/position/beta",
+            "description": "yaw",
+	    "index": 14,
+            "units": "deg",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/flightmodel/position/y_agl",
+            "description": "height above ground",
+	    "index": 15,
+            "units": "m",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/time/total_flight_time_sec",
+            "description": "time that the sim has been running",
+	    "index": 16,
+            "units": "s",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/cockpit/radios/nav1_vdef_dot",
+            "description": "navigation deflection vertical #1",
+	    "index": 17,
+            "units": "float",
+            "freq": 1,
+            "rounding": 2
+        },
+        {
+            "dref": "sim/cockpit/radios/nav1_hdef_dot",
+            "description": "navigation deflection horizontal #1",
+	    "index": 18,
+            "units": "float",
+            "freq": 1,
+            "rounding": 2
+        },
+	{
+	    "dref": "sim/weather/wind_direction_degt",
+	    "description": "wind direction deg",
+	    "index": 19,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/weather/wind_speed_kt",
+	    "description": "wind speed m/s",
+	    "index": 20,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/aircraft/weight/acf_m_fuel_tot",
+	    "description": "total fuel lbs",
+	    "index": 21,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/cockpit/gps/course",
+	    "description": "gps programmed true course",
+	    "index": 22,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/cockpit/gps/destination_index",
+	    "description": "gps programmed navaid index",
+	    "index": 23,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/cockpit/gps/airport_index",
+	    "description": "gps programmed airport index",
+	    "index": 24,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/flightmodel/position/P",
+	    "description": "aircraft roll rate deg/sec",
+	    "index": 25,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/flightmodel/position/Q",
+	    "description": "aircraft pitch rate deg/sec",
+	    "index": 26,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/flightmodel/position/R",
+	    "description": "aircraft yaw rate deg/sec",
+	    "index": 27,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/cockpit/radios/nav1_dme_dist_m",
+	    "description": "nav1 dme distance nm",
+	    "index": 28,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/cockpit/radios/adf1_dir_degt",
+	    "description": "adf1 indicated relative bearing to station",
+	    "index": 29,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 3
+	},
+	{
+	    "dref": "sim/cockpit/radios/nav1_dir_degt",
+	    "description": "vor1 indicated relative bearing to station",
+	    "index": 30,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 3
+	},
+	{
+	    "dref": "sim/cockpit/radios/nav1_hdef_deg",
+	    "description": "vor1 indicated magnetic bearing to station",
+	    "index": 31,
+	    "units": "float",
+	    "freq": 1,
+	    "rounding": 3
+	},
+	{
+	    "dref": "sim/cockpit/radios/adf1_freq_hz",
+	    "description": "adf1 tuned freq",
+	    "index": 32,
+	    "units": "int",
+	    "freq": 1,
+	    "rounding": 0
+	},
+        {
+            "dref": "sim/cockpit/radios/nav2_dme_dist_m",
+            "description": "nav2 dme distance nm",
+	    "index": 33,
+            "units": "float",
+            "freq": 1,
+            "rounding": 2
+        },
+        {
+            "dref": "sim/cockpit2/gauges/indicators/roll_AHARS_deg_pilot",
+            "description": "ahars roll deg",
+	    "index": 34,
+            "units": "float",
+            "freq": 1,
+            "rounding": 2
+        }
+    ],
+    "inputs": [
+        {
+            "dref": "sim/joystick/yoke_heading_ratio",
+            "description": "pilot yaw input",
+	    "index": 100,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/joystick/yoke_roll_ratio",
+            "description": "pilot roll input",
+	    "index": 101,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/joystick/yoke_pitch_ratio",
+            "description": "pilot pitch input",
+	    "index": 102,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/flightmodel/controls/aileron_trim",
+            "description": "aileron trim",
+	    "index": 103,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/cockpit/autopilot/autopilot_mode",
+            "description": "autopilot mode select 0/1/2",
+	    "index": 104,
+            "units": "int",
+            "freq": 1,
+            "rounding": 0
+        },
+        {
+            "dref": "sim/cockpit/autopilot/approach_selector",
+            "description": "autopilot selection switch nav 0/1",
+	    "index": 105,
+            "units": "",
+            "freq": 1,
+            "rounding": 0
+        },
+        {
+            "dref": "sim/cockpit2/controls/left_brake_ratio",
+            "description": "left brake ratio",
+	    "index": 106,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 2
+        },
+        {
+            "dref": "sim/cockpit2/controls/right_brake_ratio",
+            "description": "right brake ratio",
+	    "index": 107,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/cockpit/radios/nav1_freq_hz",
+            "description": "navigation frequency #1",
+	    "index": 108,
+            "units": "hz",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/cockpit/switches/gear_handle_status",
+            "description": "landing gear handle status",
+	    "index": 109,
+            "units": "bool",
+            "freq": 1,
+            "rounding": 0
+        },
+        {
+            "dref": "sim/flightmodel/controls/flaprqst",
+            "description": "flap deflection requested",
+	    "index": 110,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 2
+        },
+        {
+            "dref": "sim/flightmodel/engine/ENGN_thro[0]",
+            "description": "engine throttle ratio #1",
+	    "index": 111,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/flightmodel/engine/ENGN_thro[1]",
+            "description": "engine throttle ratio #2",
+	    "index": 112,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/flightmodel/engine/ENGN_prop[0]",
+            "description": "engine prop ratio #1",
+	    "index": 113,
+            "units": "",
+            "freq": 1,
+            "rounding": 2
+        },
+        {
+            "dref": "sim/flightmodel/engine/ENGN_prop[1]",
+            "description": "engine prop ratio #2",
+	    "index": 114,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 2
+        },
+        {
+            "dref": "sim/cockpit2/engine/actuators/mixture_ratio[1]",
+            "description": "engine mixture ratio #2",
+	    "index": 115,
+            "units": "",
+            "freq": 1,
+            "rounding": 1
+        },
+        {
+            "dref": "sim/cockpit2/engine/actuators/mixture_ratio[0]",
+            "description": "engine mixture ratio #1",
+	    "index": 116,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 1
+        },
+        {
+            "dref": "sim/flightmodel/controls/rud_trim",
+            "description": "rudder trim",
+	    "index": 117,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 3
+        },
+        {
+            "dref": "sim/flightmodel/controls/elv_trim",
+            "description": "elevator trim",
+	    "index": 118,
+            "units": "ratio",
+            "freq": 1,
+            "rounding": 3
+        },
+	{
+	    "dref": "sim/cockpit/radios/com1_freq_hz",
+	    "description": "comm 1 freq",
+	    "index": 119,
+	    "units": "MHz",
+	    "freq": 1,
+	    "rounding": 3
+	},
+	{
+	    "dref": "sim/cockpit/radios/com1_stdby_freq_hz",
+	    "description": "comm 1 stby freq",
+	    "index": 120,
+	    "units": "MHz",
+	    "freq": 1,
+	    "rounding": 3
+	}
+    ],
+    "instructions": [
+        {
+            "dref": "sim/cockpit2/autopilot/airspeed_dial_kts",
+            "description": "autopilot speed bug",
+	    "index": 200,
+            "units": "kts indicated",
+            "freq": 1,
+            "rounding": 1
+        },
+        {
+            "dref": "sim/cockpit/autopilot/heading_mag",
+            "description": "autopilot heading bug",
+	    "index": 201,
+            "units": "deg",
+            "freq": 1,
+            "rounding": 1
+        },
+        {
+            "dref": "sim/cockpit/autopilot/altitude",
+            "description": "autopilot altitude bug",
+	    "index": 202,
+            "units": "feet",
+            "freq": 1,
+            "rounding": 1
+        },
+        {
+            "dref": "sim/aircraft/view/acf_Vno",
+            "description": "airspeed indicator Vno mark",
+	    "index": 203,
+            "units": "kts",
+            "freq": 1,
+            "rounding": 1
+        },
+	{
+	    "dref": "sim/cockpit/radios/nav1_course_degm",
+	    "description": "course localizer or nav1",
+	    "index": 204,
+	    "units": "deg",
+	    "freq": 1,
+	    "rounding": 1
+	},
+	{
+	    "dref": "sim/cockpit/radios/nav1_obs_degm",
+	    "description": "obs selection localizer or nav1",
+	    "index": 205,
+	    "units": "deg",
+	    "freq": 1,
+	    "rounding": 1
+	}
+    ],
+    "failures": [
+        {
+            "dref": "sim/operation/failures/rel_engfir0",
+            "description": "engine fire #1",
+	    "index": 300,
+            "units": "int",
+            "freq": 1,
+            "rounding": 1
+        },
+	{
+	    "dref": "sim/operation/failures/rel_ss_asi",
+	    "description": "air speed indicator failure",
+	    "index": 301,
+	    "units": "int",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/operation/failures/rel_ss_ahz",
+	    "description": "artifical horizon failure",
+	    "index": 302,
+	    "units": "int",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/operation/failures/rel_ss_alt",
+	    "description": "altimeter failure",
+	    "index": 303,
+	    "units": "int",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/operation/failures/rel_ss_tsi",
+	    "description": "turn indicator failure",
+	    "index": 304,
+	    "units": "int",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/operation/failures/rel_ss_dgy",
+	    "description": "directional gyro failure",
+	    "index": 305,
+	    "units": "int",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/operation/failures/rel_ss_vvi",
+	    "description": "vsi failure",
+	    "index": 306,
+	    "units": "int",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/operation/failures/rel_engfai0",
+	    "description": "vsi failure",
+	    "index": 307,
+	    "units": "int",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/operation/failures/rel_engfai1",
+	    "description": "vsi failure",
+	    "index": 308,
+	    "units": "int",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/operation/failures/rel_engsep0",
+	    "description": "vsi failure",
+	    "index": 309,
+	    "units": "int",
+	    "freq": 1,
+	    "rounding": 2
+	},
+	{
+	    "dref": "sim/operation/failures/rel_runITT0",
+	    "description": "vsi failure",
+	    "index": 310,
+	    "units": "int",
+	    "freq": 1,
+	    "rounding": 2
+	}
+    ]
+}
