@@ -23,8 +23,8 @@ using namespace std;
 class DataUtil{
 public:
     DataUtil(Logger* log);
-    string dataframeToString(dataFrame df);
-    dataFrame getScenarioData(string request);
+    string dataframeToString(dataFrame &df);
+    dataFrame getScenarioData(string &request);
     ~DataUtil();
 
 

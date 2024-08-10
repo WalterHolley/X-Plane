@@ -3,7 +3,6 @@
 //
 
 #include "include/XPlaneListener.h"
-#include "include/XPlaneConnection.h"
 
 using boost::asio::ip::tcp;
 

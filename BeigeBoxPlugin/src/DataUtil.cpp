@@ -11,6 +11,7 @@ Logger* _logger;
 
 //***JSON PARSING**//
 
+
 /**
  * maps a datastruct from a json object provided from
  * the server
@@ -25,6 +26,7 @@ dataStruct map_datastruct(json::object jsonObj)
     structure.freq = jsonObj.at(FREQ_KEY).get_int64();
     structure.rounding = jsonObj.at(ROUNDING_KEY).get_int64();
     structure.units = jsonObj.at(UNITS_KEY).get_string().c_str();
+    structure.unitsEnum = unitMappings[structure.units];
 
     return structure;
 
@@ -40,7 +42,7 @@ int extract_int(json::object &jsonObj, string &paramKey)
     return jsonObj.at(paramKey).get_int64();
 }
 
-json::value get_frame(string message)
+json::value get_frame(string &message)
 {
     char* logMsg;
     json::error_code errorCode;
@@ -183,7 +185,7 @@ vector<dataStruct> get_datastructures(json::value val)
 
 }
 
-dataFrame parse_frame(json::value jsonValue)
+dataFrame parse_frame(json::value &jsonValue)
 {
     dataFrame df;
     //extract json object
@@ -248,7 +250,7 @@ DataUtil::DataUtil(Logger* log)
  * @param df
  * @return
  */
-string DataUtil::dataframeToString(dataFrame df)
+string DataUtil::dataframeToString(dataFrame &df)
 {
     parser.reset();
     string result;
@@ -284,9 +286,10 @@ string DataUtil::dataframeToString(dataFrame df)
     return result;
 }
 
-dataFrame DataUtil::getScenarioData(std::string request)
+dataFrame DataUtil::getScenarioData(std::string &request)
 {
-    return parse_frame(get_frame(request));
+    json::value jsonVal = get_frame(request);
+    return parse_frame(jsonVal);
 }
 
 DataUtil::~DataUtil()

@@ -44,7 +44,7 @@ set(PRIVATE_SOURCE
         "src/DataUtil.cpp"
         "src/DataProcessor.cpp"
         "src/Logger.cpp"
-        src/include/BBTypes.h)
+        src/include/BBTypes.h src/Recorder.cpp src/include/Recorder.h)
 
 add_library(${PROJECT_NAME} SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE})
 

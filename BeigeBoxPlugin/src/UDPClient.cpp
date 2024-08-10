@@ -97,7 +97,8 @@ dataFrame UDPClient::receive()
             fill(buffer.begin(), buffer.end(), NULL);
             _socket.receive(boost::asio::buffer(buffer));
             _log->debug("Data received from cwic");
-            returnValue = _util->getScenarioData(buffer.c_array());
+            string s_buffer = buffer.c_array();
+            returnValue = _util->getScenarioData(s_buffer);
         }
         else{
             _log->error("Data connection is not available.");
