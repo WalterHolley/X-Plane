@@ -25,6 +25,7 @@ link_directories(../SDK/Libraries)
 include_directories(${XPLANE_INCLUDE_DIR})
 include_directories(src/include)
 include_directories(../SDK/cwic/include)
+include_directories(../SDK/sqlite)
 
 file(GLOB HEADERS
         src/include/*.hpp)
@@ -43,7 +44,7 @@ set(PRIVATE_SOURCE
         "src/DataUtil.cpp"
         "src/DataProcessor.cpp"
         "src/Logger.cpp"
-        )
+        src/include/BBTypes.h)
 
 add_library(${PROJECT_NAME} SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE})
 
