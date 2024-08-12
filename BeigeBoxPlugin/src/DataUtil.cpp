@@ -26,20 +26,10 @@ dataStruct map_datastruct(json::object jsonObj)
     structure.freq = jsonObj.at(FREQ_KEY).get_int64();
     structure.rounding = jsonObj.at(ROUNDING_KEY).get_int64();
     structure.units = jsonObj.at(UNITS_KEY).get_string().c_str();
-    structure.unitsEnum = unitMappings[structure.units];
+    structure.unitsEnum = unitMappings[structure.units.c_str()];
 
     return structure;
 
-}
-
-string extract_string(json::object &jsonObj, string &paramKey)
-{
-    return reinterpret_cast<basic_string<char> &&>(jsonObj.at(paramKey).get_string());
-}
-
-int extract_int(json::object &jsonObj, string &paramKey)
-{
-    return jsonObj.at(paramKey).get_int64();
 }
 
 json::value get_frame(string &message)

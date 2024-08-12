@@ -6,14 +6,16 @@
 #define RECORDER_H
 #include <string>
 #include "BBTypes.h"
+#include "Logger.h"
 
 class Recorder
 {
 public:
-    Recorder(std::string &sessionId, dataFrame* df);
+    Recorder(std::string &sessionId, dataFrame* df, Logger* logger);
     void write();
     bool init();
     ~Recorder();
+
 };
 
 #endif //RECORDER_H

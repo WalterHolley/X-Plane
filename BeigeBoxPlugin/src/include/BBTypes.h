@@ -24,13 +24,14 @@ const std::string FREQ_KEY = "freq";
 const std::string ROUNDING_KEY = "rounding";
 const std::string UNITS_KEY = "units";
 const char* unitStrings[] = {"deg/min", "deg", "feet", "knots", "bool", "inHg","m/s", "m", "s","float", "int", "ratio", "", "hz", "MHz", "kts indicated"  };
+const char* dataElementStrings[] = { "STATE", "INPUTS", "INSTRUCTIONS", "FAILURES"};
 
 enum dataElement
 {
-    STATE = 1,
-    INPUTS = 2,
-    INSTRUCTIONS = 3,
-    FAILURES = 4
+    STATE = 0,
+    INPUTS = 1,
+    INSTRUCTIONS = 2,
+    FAILURES = 3
 
 };
 enum units
@@ -97,6 +98,20 @@ std::map<const char*, units> unitMappings = {
         {unitStrings[13], units::HZ},
         {unitStrings[14], units::MHZ},
         {unitStrings[15], units::KTIAS}
+};
+
+std::map<dataElement, const char*> dataElementString = {
+        {dataElement::STATE, dataElementStrings[0]},
+        {dataElement::INPUTS, dataElementStrings[1]},
+        {dataElement::INSTRUCTIONS, dataElementStrings[2]},
+        {dataElement::FAILURES, dataElementStrings[3]}
+};
+
+std::map<const char*, dataElement> stringToDataElement = {
+        {dataElementStrings[0], dataElement::STATE},
+        {dataElementStrings[1], dataElement::INPUTS},
+        {dataElementStrings[2], dataElement::INSTRUCTIONS},
+        {dataElementStrings[3], dataElement::FAILURES}
 };
 
 
