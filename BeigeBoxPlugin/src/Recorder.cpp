@@ -246,12 +246,15 @@ void Recorder::write()
             }
             else
             {
-                _log->error("Could not insert state: " + errMsg);
+                _log->error("Could not insert state: " + string(errMsg));
             }
 
+            if(ec != SQLITE_OK)
+            {
+                _log->error("Could not write to supporting tables: " +string(errMsg));
+            }
         }
 
-        if()
     }
 
 }

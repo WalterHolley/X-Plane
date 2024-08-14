@@ -4,45 +4,36 @@
 #include "include/DataUtil.h"
 
 #include <fstream>
-
+#include <string>
 
 dataFrame df;
 
+using namespace std;
 
 //========PUBLIC METHODS===========//
 
 DataProcessor::DataProcessor(Logger* log)
 {
     _started = false;
-    _dpFailed = false;
+    _dataUtil = new DataUtil(log);
     _log = log;
-    _client = new UDPClient(log);
 }
 
-void DataProcessor::Start()
+void DataProcessor::init()
 {
     if(!_started)
     {
         try
         {
-            if(!_client->connectionIsOpen())
-            {
-                _client->open();
-            }
-
-            if(_client->connectionIsOpen())
-            {
-                _log->info("Connected. Attempting to receive initial message");
-
-                //TODO: thread for receive functionality
-                this->get();
-                _log->info("Received initial data");
-                _started = true;
-            }
-            else
-            {
-                _dpFailed = true;
-            }
+            //Load json
+            char* content;
+            ifstream json;
+            json.open("../res/datarefs.json");
+            json.read(content, json.gcount());
+            //convert to dataframe
+            string jsn(content);
+            df = _dataUtil->getScenarioData(jsn);
+            _dataRecorder = new Recorder(df, _log);
 
 
         }
@@ -52,7 +43,6 @@ void DataProcessor::Start()
             message.append(ex.what());
             _log->error(message);
             _started = false;
-            _dpFailed = true;
         }
     }
 
@@ -61,32 +51,24 @@ void DataProcessor::Start()
 
 void DataProcessor::get()
 {
-    df = _client->receive();
-    _client->send(df);
-}
-
-
-void DataProcessor::Stop()
-{
-    if(_client->connectionIsOpen())
-    {
-        _client->close();
-        _started = false;
-    }
 
 }
 
-bool  DataProcessor::hasStarted()
+
+void DataProcessor::stop()
 {
+    //disconnect from db
+
+}
+
+bool  DataProcessor::hasInited() {
     return _started;
 }
-bool DataProcessor::hasFailed()
-{
-    return _dpFailed;
-}
+
 
 DataProcessor::~DataProcessor()
 {
-    free(_client);
+    free(_dataRecorder);
+    free(_dataUtil);
 }
 

@@ -7,24 +7,24 @@
 
 #include "Logger.h"
 #include "UDPClient.h"
+#include "Recorder.h"
 #include <string>
 #include <vector>
 
 class DataProcessor
 {
     public:
-        void Start();
-        bool hasStarted();
-        bool hasFailed();
-        void Stop();
+        void init();
+        bool hasInited();
+        void stop();
         void get();
-        DataProcessor(Logger* log);
+        DataProcessor(Logger* log); //TODO:  Figure out session Id
         ~DataProcessor();
     private:
-        UDPClient* _client;
         Logger* _log;
+        Recorder* _dataRecorder;
         bool _started;
-        bool _dpFailed;
+        DataUtil* _dataUtil;
 };
 
 

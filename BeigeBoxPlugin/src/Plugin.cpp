@@ -9,6 +9,9 @@
 #define XPLM400
 
 #include<XPLM/XPLMProcessing.h>
+#include <boost/asio/io_service.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread/thread.hpp>
 #include "include/DataProcessor.h"
 #include "include/Logger.h"
 
@@ -64,7 +67,7 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
 
 
     //register callback
-    XPLMRegisterFlightLoopCallback((XPLMFlightLoop_f)PollData, 1.0, NULL);
+    XPLMRegisterFlightLoopCallback((XPLMFlightLoop_f)PollData, -1, NULL);
     return 1;
 }
 
