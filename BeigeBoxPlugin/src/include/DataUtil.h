@@ -25,6 +25,7 @@ public:
     DataUtil(Logger* log);
     string dataframeToString(dataFrame &df);
     dataFrame getScenarioData(string &request);
+    void updateScenario(dataFrame &df);
     ~DataUtil();
 
 

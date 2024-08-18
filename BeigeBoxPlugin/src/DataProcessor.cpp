@@ -33,7 +33,7 @@ void DataProcessor::init()
             //convert to dataframe
             string jsn(content);
             df = _dataUtil->getScenarioData(jsn);
-            _dataRecorder = new Recorder(df, _log);
+            //_dataRecorder = new Recorder(df, _log);
 
 
         }

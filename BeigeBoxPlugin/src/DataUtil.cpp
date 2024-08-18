@@ -282,6 +282,29 @@ dataFrame DataUtil::getScenarioData(std::string &request)
     return parse_frame(jsonVal);
 }
 
+void DataUtil::updateScenario(dataFrame &df)
+{
+    for(auto i = df.state.begin(); i != df.state.end(); ++i)
+    {
+        i->value = get_dataref_value(i->index);
+    }
+
+    for(auto i = df.instructions.begin(); i != df.instructions.end(); ++i)
+    {
+        i->value = get_dataref_value(i->index);
+    }
+
+    for(auto i = df.inputs.begin(); i != df.inputs.end(); ++i)
+    {
+        i->value = get_dataref_value(i->index);
+    }
+
+    for(auto i = df.failures.begin(); i != df.failures.end(); ++i)
+    {
+        i->value = get_dataref_value(i->index);
+    }
+}
+
 DataUtil::~DataUtil()
 {
     parser.finish();
