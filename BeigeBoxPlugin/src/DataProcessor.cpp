@@ -2,15 +2,29 @@
 
 #include "include/DataProcessor.h"
 #include "include/DataUtil.h"
+#include <boost/asio.hpp>
+#include <boost/thread/thread.hpp>
 
 #include <fstream>
 #include <string>
 
-dataFrame df;
-
 using namespace std;
+using namespace boost;
 
-//========PUBLIC METHODS===========//
+dataFrame df;
+dataFrame* dfPtr;
+string TEMP_SESSION = "NORTHWIND_AI";
+boost::asio::thread_pool taskPool(1);
+boost::thread writeThread();
+int frameRate = 1000 / 60;
+
+void writeLoop()
+{
+
+}
+
+
+//========CLASS METHODS===========//
 
 DataProcessor::DataProcessor(Logger* log)
 {
@@ -33,13 +47,14 @@ void DataProcessor::init()
             //convert to dataframe
             string jsn(content);
             df = _dataUtil->getScenarioData(jsn);
-            //_dataRecorder = new Recorder(df, _log);
-
+            dfPtr = new dataFrame;
+            *dfPtr = df;
+            _dataRecorder = new Recorder(TEMP_SESSION, dfPtr, _log);
 
         }
         catch(std::exception& ex)
         {
-            string message("An exception occurred during data processing: ");
+            string message("An exception occurred while initializing data processing: ");
             message.append(ex.what());
             _log->error(message);
             _started = false;
@@ -49,9 +64,8 @@ void DataProcessor::init()
 
 }
 
-void DataProcessor::get()
+void DataProcessor::start()
 {
-
 }
 
 
@@ -61,14 +75,22 @@ void DataProcessor::stop()
 
 }
 
-bool  DataProcessor::hasInited() {
+bool  DataProcessor::hasInited()
+{
     return _started;
 }
 
+
+void DataProcessor::dataLoop()
+{
+
+}
 
 DataProcessor::~DataProcessor()
 {
     free(_dataRecorder);
     free(_dataUtil);
+    free(dfPtr);
 }
+
 

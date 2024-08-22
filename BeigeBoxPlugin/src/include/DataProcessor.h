@@ -17,7 +17,7 @@ class DataProcessor
         void init();
         bool hasInited();
         void stop();
-        void get();
+        void start();
         DataProcessor(Logger* log); //TODO:  Figure out session Id
         ~DataProcessor();
     private:
@@ -25,6 +25,7 @@ class DataProcessor
         Recorder* _dataRecorder;
         bool _started;
         DataUtil* _dataUtil;
+        void dataLoop();
 };
 
 

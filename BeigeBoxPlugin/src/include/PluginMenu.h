@@ -2,13 +2,15 @@
 // Created by Zero on 8/15/2024.
 //
 
-#ifndef BEIGEBOX_SUITE_PLUGINMENU_H
-#define BEIGEBOX_SUITE_PLUGINMENU_H
+#ifndef PLUGINMENU_H
+#define PLUGINMENU_H
 
+#include <XPLM/XPLMMenus.h>
 
 class PluginMenu {
-
+public:
+    void init();
 };
 
 
-#endif //BEIGEBOX_SUITE_PLUGINMENU_H
+#endif //PLUGINMENU_H
