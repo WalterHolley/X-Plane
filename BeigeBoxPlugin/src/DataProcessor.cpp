@@ -7,21 +7,22 @@
 
 #include <fstream>
 #include <string>
+#include <ctime>
 
 using namespace std;
 using namespace boost;
+
+
 
 dataFrame df;
 dataFrame* dfPtr;
 string TEMP_SESSION = "NORTHWIND_AI";
 boost::asio::thread_pool taskPool(1);
-boost::thread writeThread();
 int frameRate = 1000 / 60;
 
-void writeLoop()
-{
 
-}
+
+
 
 
 //========CLASS METHODS===========//
@@ -66,12 +67,17 @@ void DataProcessor::init()
 
 void DataProcessor::start()
 {
+    if(!_started)
+    {
+        boost::thread(dataLoop);
+    }
 }
 
 
 void DataProcessor::stop()
 {
     //disconnect from db
+    _started = false;
 
 }
 
@@ -83,8 +89,21 @@ bool  DataProcessor::hasInited()
 
 void DataProcessor::dataLoop()
 {
-
+    while (_started) {
+        boost::chrono::time_point start = boost::chrono::steady_clock::now() + boost::chrono::milliseconds(frameRate);
+        auto task = bind(&DataProcessor::writeLoop, this);
+        boost::asio::post(taskPool, task);
+        boost::this_thread::sleep_until(start);
+    }
+    taskPool.join();
 }
+
+void DataProcessor::writeLoop()
+{
+    _dataUtil->updateScenario(df);
+    _dataRecorder->write();
+}
+
 
 DataProcessor::~DataProcessor()
 {

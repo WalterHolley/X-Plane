@@ -9,8 +9,6 @@
 #define XPLM400
 
 #include<XPLM/XPLMProcessing.h>
-#include <boost/asio/io_service.hpp>
-#include <boost/bind.hpp>
 #include <boost/thread/thread.hpp>
 #include "include/DataProcessor.h"
 #include "include/Logger.h"
@@ -26,23 +24,18 @@ Logger* _log;
 float PollData()
 {
     float result = 0.0;
-    if(dataProcessor->hasFailed())
-    {
-        //do nothing
-        result = -1.0;
-    }
-    else if(dataProcessor->hasStarted())
+
+    if(dataProcessor->hasInited())
     {
 
         //open data collection
         _log->info("Retrieving data");
-        dataProcessor->get();
         result = 1.0;
     }
     else
     {
         _log->info("Initing data collection process.");
-        dataProcessor->Start();
+        dataProcessor->start();
         result  = 1.0;
     }
 
@@ -74,9 +67,9 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
 PLUGIN_API void XPluginStop(void)
 {
     //end network connection
-    if(dataProcessor->hasStarted())
+    if(dataProcessor->hasInited())
     {
-        dataProcessor->Stop();
+        dataProcessor->stop();
     }
 
     //destroy callback
@@ -115,9 +108,9 @@ PLUGIN_API int XPluginEnable(void)
 PLUGIN_API void XPluginDisable(void)
 {
 
-    if(dataProcessor && !dataProcessor->hasFailed())
+    if(dataProcessor && dataProcessor->hasInited())
     {
-        dataProcessor->Stop();
+        dataProcessor->stop();
     }
     _log->info("Plugin disabled");
 

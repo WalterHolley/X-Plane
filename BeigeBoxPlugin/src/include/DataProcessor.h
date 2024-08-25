@@ -26,6 +26,7 @@ class DataProcessor
         bool _started;
         DataUtil* _dataUtil;
         void dataLoop();
+        void writeLoop();
 };
 
 
