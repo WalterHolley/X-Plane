@@ -40,11 +40,15 @@ set(PRIVATE_SOURCE
         "src/include/DataProcessor.h"
         "src/include/UDPClient.h"
         "src/include/Logger.h"
+        "src/include/BBTypes.h"
+        "src/include/Recorder.h"
+        "src/include/PluginMenu.h"
         "src/UDPClient.cpp"
         "src/DataUtil.cpp"
         "src/DataProcessor.cpp"
         "src/Logger.cpp"
-        src/include/BBTypes.h src/Recorder.cpp src/include/Recorder.h src/PluginMenu.cpp src/include/PluginMenu.h)
+        "src/Recorder.cpp"
+        "src/PluginMenu.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE})
 
@@ -65,6 +69,10 @@ if(WIN32)
             -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/XPLM_64.lib
             -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/XPWidgets_64.lib
             -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/cwic/lib/cwic_lib.dll
+            -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/cygboost_chrono.dll
+            -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/cygboost_context.dll
+            -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/cygboost_system.dll
+
             "ws2_32")
 elseif (APPLE)
     add_definitions(-DAPL=1)

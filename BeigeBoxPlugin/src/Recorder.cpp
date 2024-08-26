@@ -12,63 +12,12 @@
 using namespace std;
 
 sqlite3* db;
-int ec;
+
 bool wasInited = false;
 dataFrame* recorderData;
-Logger* _log;
+
 string sessionIdentifier;
 string dbName;
-
-string createInsertStatement(vector<dataStruct> values, const char* &tableName, uint64_t &timestamp, uint64_t &stateId)
-{
-    string insertStatement;
-    string columnsSection = "(TIMESTAMP, ";
-    string valuesSection = "VALUES(" + to_string(timestamp) + ", ";
-
-    insertStatement = "INSERT INTO " + string(tableName) + " ";
-
-    switch(stringToDataElement[tableName])
-    {
-        case STATE:
-            break;
-        case INSTRUCTIONS:
-        case INPUTS:
-        case FAILURES:
-            columnsSection += "STATE_ID, ";
-            valuesSection += to_string(stateId) + ", ";
-            break;
-    }
-
-    for(auto i = values.begin(); i != values.end(); ++i)
-    {
-        columnsSection += i->index;
-        if(i->unitsEnum == units::TEXT)
-        {
-            valuesSection += "'" + i->value + "'";
-        }
-        else
-        {
-            valuesSection += i->value;
-        }
-
-
-        if(i != values.end())
-        {
-            columnsSection += ", ";
-            valuesSection += ", ";
-        }
-        else
-        {
-            columnsSection += ")";
-            valuesSection += ")";
-        }
-    }
-
-    insertStatement += columnsSection + valuesSection + ";";
-    _log->debug("INSERT Statement: " + insertStatement);
-
-    return insertStatement;
-}
 
 string createColumns(vector<dataStruct> columns)
 {
@@ -151,34 +100,11 @@ string createTable(dataElement element)
 
     createStatement += ");";
 
-    _log->debug("SQL Create Table Statement: " + createStatement);
     return createStatement;
 
 }
 
-bool writeSchema()
-{
-    char* errMsg;
-    bool result = false;
-    string schema = createTable(dataElement::STATE);
-    schema += createTable(dataElement::INPUTS);
-    schema += createTable(dataElement::INSTRUCTIONS);
-    schema += createTable(dataElement::FAILURES);
 
-    int code = sqlite3_exec(db, schema.c_str(), NULL, 0, &errMsg);
-
-    if(code != SQLITE_OK)
-    {
-        _log->error("DB Schema could not be implemented");
-    }
-    else
-    {
-        _log->info("DB setup successful");
-        result = true;
-    }
-
-    return result;
-}
 
 bool fileExists(string &fileName)
 {
@@ -258,6 +184,86 @@ void Recorder::write()
     }
 
 }
+
+//********PRIVATE METHODS********//
+bool Recorder::writeSchema()
+{
+    char* errMsg;
+    bool result = false;
+    string schema = createTable(dataElement::STATE);
+    schema += createTable(dataElement::INPUTS);
+    schema += createTable(dataElement::INSTRUCTIONS);
+    schema += createTable(dataElement::FAILURES);
+
+    _log->debug("SQL Create Table Statement: " + schema);
+
+    int code = sqlite3_exec(db, schema.c_str(), NULL, 0, &errMsg);
+
+    if(code != SQLITE_OK)
+    {
+        _log->error("DB Schema could not be implemented");
+    }
+    else
+    {
+        _log->info("DB setup successful");
+        result = true;
+    }
+
+    return result;
+}
+
+string Recorder::createInsertStatement(vector<dataStruct> values, const char* &tableName, uint64_t &timestamp, uint64_t &stateId)
+{
+    string insertStatement;
+    string columnsSection = "(TIMESTAMP, ";
+    string valuesSection = "VALUES(" + to_string(timestamp) + ", ";
+
+    insertStatement = "INSERT INTO " + string(tableName) + " ";
+
+    switch(stringToDataElement[tableName])
+    {
+        case STATE:
+            break;
+        case INSTRUCTIONS:
+        case INPUTS:
+        case FAILURES:
+            columnsSection += "STATE_ID, ";
+            valuesSection += to_string(stateId) + ", ";
+            break;
+    }
+
+    for(auto i = values.begin(); i != values.end(); ++i)
+    {
+        columnsSection += i->index;
+        if(i->unitsEnum == units::TEXT)
+        {
+            valuesSection += "'" + i->value + "'";
+        }
+        else
+        {
+            valuesSection += i->value;
+        }
+
+
+        if(i != values.end())
+        {
+            columnsSection += ", ";
+            valuesSection += ", ";
+        }
+        else
+        {
+            columnsSection += ")";
+            valuesSection += ")";
+        }
+    }
+
+    insertStatement += columnsSection + valuesSection + ";";
+    _log->debug("INSERT Statement: " + insertStatement);
+
+    return insertStatement;
+}
+
+//***Destructor
 Recorder::~Recorder()
 {
     sqlite3_close(db);
@@ -267,4 +273,3 @@ Recorder::~Recorder()
         free(db);
     }
 }
-

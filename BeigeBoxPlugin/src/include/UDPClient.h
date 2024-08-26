@@ -12,7 +12,6 @@
 #include<windows.h>
 #endif
 
-#include "Logger.h"
 #include "DataUtil.h"
 #include <c_headers.h>
 

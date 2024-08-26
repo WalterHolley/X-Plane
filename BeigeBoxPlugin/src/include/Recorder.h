@@ -15,6 +15,11 @@ public:
     void write();
     bool init();
     ~Recorder();
+private:
+    int ec;
+    Logger* _log;
+    bool writeSchema();
+    std::string createInsertStatement(std::vector<dataStruct> values, const char* &tableName, uint64_t &timestamp, uint64_t &stateId);
 
 };
 

@@ -23,8 +23,8 @@ const std::string DESCRIPTION_KEY = "description";
 const std::string FREQ_KEY = "freq";
 const std::string ROUNDING_KEY = "rounding";
 const std::string UNITS_KEY = "units";
-const char* unitStrings[] = {"deg/min", "deg", "feet", "knots", "bool", "inHg","m/s", "m", "s","float", "int", "ratio", "", "hz", "MHz", "kts indicated"  };
-const char* dataElementStrings[] = { "STATE", "INPUTS", "INSTRUCTIONS", "FAILURES"};
+const static char* unitStrings[] = {"deg/min", "deg", "feet", "knots", "bool", "inHg","m/s", "m", "s","float", "int", "ratio", "", "hz", "MHz", "kts indicated"  };
+const static char* dataElementStrings[] = { "STATE", "INPUTS", "INSTRUCTIONS", "FAILURES"};
 
 enum dataElement
 {
@@ -81,7 +81,7 @@ struct dataReference {
     std::string type;
 };
 
-std::map<const char*, units> unitMappings = {
+static std::map<const char*, units> unitMappings = {
         {unitStrings[0], units::DEGMIN},
         {unitStrings[1], units::DEG},
         {unitStrings[2], units::FEET},
@@ -100,14 +100,14 @@ std::map<const char*, units> unitMappings = {
         {unitStrings[15], units::KTIAS}
 };
 
-std::map<dataElement, const char*> dataElementString = {
+static std::map<dataElement, const char*> dataElementString = {
         {dataElement::STATE, dataElementStrings[0]},
         {dataElement::INPUTS, dataElementStrings[1]},
         {dataElement::INSTRUCTIONS, dataElementStrings[2]},
         {dataElement::FAILURES, dataElementStrings[3]}
 };
 
-std::map<const char*, dataElement> stringToDataElement = {
+static std::map<const char*, dataElement> stringToDataElement = {
         {dataElementStrings[0], dataElement::STATE},
         {dataElementStrings[1], dataElement::INPUTS},
         {dataElementStrings[2], dataElement::INSTRUCTIONS},

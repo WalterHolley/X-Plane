@@ -4,8 +4,6 @@
 
 #define MAX_TIME 20
 #include<XPLM/XPLMUtilities.h>
-#include<XPLM/XPLMDataAccess.h>
-#include<boost/utility/string_view.hpp>
 #include <string>
 #include <iostream>
 #include <time.h>
