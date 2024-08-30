@@ -4,7 +4,6 @@
 
 #include <sqlite3.h>
 #include <fstream>
-#include <ctime>
 #include <chrono>
 #include <iostream>
 #include "include/Recorder.h"

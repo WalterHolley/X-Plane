@@ -10,8 +10,7 @@
 #include "Recorder.h"
 #include <string>
 #include <vector>
-#include <boost/fiber/future/async.hpp>
-#include <boost/fiber/future/promise.hpp>
+#include <future>
 
 class DataProcessor
 {
@@ -19,7 +18,7 @@ class DataProcessor
         void init();
         bool hasInited();
         void stop();
-        boost::fibers::shared_future<void> start();
+        std::shared_future<void> start();
         DataProcessor(Logger* log); //TODO:  Figure out session Id
         ~DataProcessor();
     private:

@@ -9,6 +9,7 @@
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/chrono.hpp>
+#include <thread>
 
 #include <fstream>
 #include <string>
@@ -23,7 +24,7 @@ dataFrame df;
 dataFrame* dfPtr;
 string TEMP_SESSION = "NORTHWIND_AI";
 boost::asio::thread_pool taskPool(1);
-boost::fibers::future<void> processingFuture;
+future<void> processingFuture;
 int frameRate = 1000 / 60;
 
 
@@ -71,12 +72,13 @@ void DataProcessor::init()
 
 }
 
-boost::fibers::shared_future<void> DataProcessor::start()
+shared_future<void> DataProcessor::start()
 {
     if(_inited && !_started)
     {
-        auto task = [this] { dataLoop(); };
-        processingFuture = boost::fibers::async(task);
+        packaged_task<void()> pt([this] {dataLoop();});;
+        processingFuture = pt.get_future();
+        std::thread launchThread(std::move(pt));
 
         _started = true;
     }

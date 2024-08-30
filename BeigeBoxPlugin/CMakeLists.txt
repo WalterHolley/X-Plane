@@ -7,7 +7,7 @@ set(XPLANE_INCLUDE_DIR "../SDK/xplane")
 get_filename_component(PROJECT_ROOT .. ABSOLUTE)
 project(BBPlugin)
 
-find_package(Boost 1.82.0 REQUIRED)
+find_package(Boost 1.82.0 COMPONENTS thread)
 
 
 if(Boost_FOUND)
@@ -36,6 +36,7 @@ set(PUBLIC_SOURCE
 
 set(PRIVATE_SOURCE
         "${PROJECT_ROOT}/SDK/cwic/include/c_headers.h"
+        "${PROJECT_ROOT}/SDK/sqlite/sqlite3.h"
         "src/include/DataUtil.h"
         "src/include/DataProcessor.h"
         "src/include/UDPClient.h"
@@ -43,6 +44,7 @@ set(PRIVATE_SOURCE
         "src/include/BBTypes.h"
         "src/include/Recorder.h"
         "src/include/PluginMenu.h"
+        "${PROJECT_ROOT}/SDK/sqlite/sqlite3.c"
         "src/UDPClient.cpp"
         "src/DataUtil.cpp"
         "src/DataProcessor.cpp"
@@ -68,10 +70,9 @@ if(WIN32)
     target_link_libraries( ${PROJECT_NAME}
             -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/XPLM_64.lib
             -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/XPWidgets_64.lib
-            -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/cwic/lib/cwic_lib.dll
-            -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/cygboost_chrono.dll
-            -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/cygboost_context.dll
-            -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/cygboost_system.dll
+            ${PROJECT_ROOT}/SDK/cwic/lib/cwic_lib.dll
+            ${PROJECT_ROOT}/SDK/Libraries/Win/cygboost_chrono.dll
+            ${PROJECT_ROOT}/SDK/Libraries/Win/cygboost_context.dll
 
             "ws2_32")
 elseif (APPLE)

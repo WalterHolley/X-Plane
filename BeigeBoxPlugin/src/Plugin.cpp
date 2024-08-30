@@ -9,7 +9,6 @@
 #define XPLM400
 
 #include<XPLM/XPLMProcessing.h>
-#include <boost/thread/thread.hpp>
 #include "include/DataProcessor.h"
 #include "include/Logger.h"
 
