@@ -50,7 +50,7 @@ set(PRIVATE_SOURCE
         "src/DataProcessor.cpp"
         "src/Logger.cpp"
         "src/Recorder.cpp"
-        "src/PluginMenu.cpp")
+        "src/PluginMenu.cpp" src/include/TaskWorker.h src/TaskWorker.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE})
 
