@@ -22,6 +22,7 @@ void TaskWorker::push(std::function<void()> task)
 {
     lock_guard<mutex> lockGuard(operationMutex);
     taskQueue.push_back(task);
+    _log.debug("Task Queued");
 }
 
 bool TaskWorker::isTaskQueued()
@@ -37,6 +38,7 @@ void TaskWorker::start()
        workerLoopFuture = async(&TaskWorker::executeTasks, this);
        lock_guard<mutex> lockGuard(operationMutex);
        _isStopped = false;
+       _log.info("Task Worker Started");
     }
 
 }
@@ -46,6 +48,7 @@ void TaskWorker::stop()
     lock_guard<mutex> lockGuard(operationMutex);
     _isStopped = true;
     workerLoopFuture.wait();
+    _log.info("Task Worker Stopped");
 }
 
 bool TaskWorker::isStarted()
@@ -63,9 +66,12 @@ void TaskWorker::executeTasks()
             packaged_task<void()> task(func);
 
             thread t(std::move(task));
+
+            _log.debug("Task started");
             lock_guard<mutex> lockGuard(operationMutex);
             t.join();
             taskQueue.pop_front();
+            _log.debug("Task completed");
         }
 
     }

@@ -97,6 +97,7 @@ void DataProcessor::dataLoop()
         if(!_taskWorker->isStarted())
         {
             _taskWorker->start();
+            _log.info("Task Worker initiated");
         }
         auto task = [this](){dataLoop();};
         _taskWorker->push(task);
