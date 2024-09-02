@@ -15,14 +15,26 @@ XPLMMenuID xplmMenuIdentifier;
 static void menuCallback(void * inMenuRef, void * initemRef );
 
 
+PluginMenu::PluginMenu(Logger &logger)
+{
+    _logger = logger;
+    _dataProcessor = new DataProcessor(logger);
+}
+
 void PluginMenu::init()
 {
+
      pluginSubMenuId = XPLMAppendMenuItem( XPLMFindPluginsMenu(), BASE_MENU_NAME, 0, 1);
      xplmMenuIdentifier = XPLMCreateMenu(BASE_MENU_NAME, XPLMFindPluginsMenu(), pluginSubMenuId, menuCallback, 0);
      XPLMAppendMenuItem(xplmMenuIdentifier, START_RECORDING, (void*) 1,1);
      XPLMAppendMenuItem(xplmMenuIdentifier, STOP_RECORDING, (void*) 2, 1);
 }
-void menCallback(void* menuRef, void* itemRef)
+
+PluginMenu::~PluginMenu() {
+    free(_dataProcessor);
+}
+
+void menuCallback(void* menuRef, void* itemRef)
 {
 
     switch((intptr_t) itemRef)

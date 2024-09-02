@@ -20,10 +20,10 @@ class DataProcessor
         bool hasInited();
         void stop();
         std::shared_future<void> start();
-        DataProcessor(Logger* log); //TODO:  Figure out session Id
+        DataProcessor(Logger &log); //TODO:  Figure out session Id
         ~DataProcessor();
     private:
-        Logger* _log;
+        Logger _log;
         Recorder* _dataRecorder;
         TaskWorker* _taskWorker;
         bool _started;

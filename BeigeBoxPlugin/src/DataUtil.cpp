@@ -6,7 +6,7 @@
 boost::system::error_code ec;
 json::stream_parser parser;
 map<int, dataReference> referenceMap = {};
-Logger* _logger;
+Logger _logger;
 
 
 //***JSON PARSING**//
@@ -44,7 +44,7 @@ json::value get_frame(string &message)
         if(errorCode)
         {
             sprintf(logMsg, "There was a problem during json parsing: %s", errorCode.what().c_str());
-            _logger->error(logMsg);
+            _logger.error(logMsg);
         }
 
         parser.finish(errorCode);
@@ -52,18 +52,18 @@ json::value get_frame(string &message)
         if(errorCode)
         {
             sprintf(logMsg, "There was a wrapping up during json parsing: %s", errorCode.what().c_str());
-            _logger->error(logMsg);
+            _logger.error(logMsg);
         }
         else
         {
             sprintf(logMsg, "message parsing completed successfully");
-            _logger->info(logMsg);
+            _logger.info(logMsg);
         }
     }
     catch(std::exception& ex)
     {
         sprintf(logMsg, "There was a problem during json parsing: %s", ex.what());
-        _logger->error(logMsg);
+        _logger.error(logMsg);
         return nullptr;
     }
 
@@ -80,15 +80,15 @@ json::value get_frame(string &message)
  */
 string dataStruct_to_reply_string(dataStruct ds)
 {
-    _logger->debug("Writing reply string");
+    _logger.debug("Writing reply string");
     char buffer[50];
     char* logMsg;
 
     snprintf(buffer, 50, "{\"%s\": %i, \"%s\": \"%s\" }", "index", ds.index, "value", ds.value.c_str());
-    _logger->debug(buffer);
+    _logger.debug(buffer);
     string jsonString = buffer;
     sprintf(logMsg, "outgoing json object: %s\n", buffer);
-    _logger->debug(buffer);
+    _logger.debug(buffer);
     return jsonString;
 }
 
@@ -168,7 +168,7 @@ vector<dataStruct> get_datastructures(json::value val)
     }
     else
     {
-        _logger->error("get_datastructures:  value passed was not an array");
+        _logger.error("get_datastructures:  value passed was not an array");
     }
 
     return datarefs;
@@ -214,13 +214,13 @@ dataFrame parse_frame(json::value &jsonValue)
     {
         char* logMsg;
         sprintf(logMsg, "an exception occurred in parse_frame: %s", ex.what());
-        _logger->error(logMsg);
+        _logger.error(logMsg);
     }
     return df;
 }
 
 //*****PUBLIC METHODS*****//
-DataUtil::DataUtil(Logger* log)
+DataUtil::DataUtil(Logger &log)
 {
     //logging setup
     _logger = log;
@@ -263,14 +263,14 @@ string DataUtil::dataframeToString(dataFrame &df)
         }
         else
         {
-            _logger->error("json message not completely formed");
+            _logger.error("json message not completely formed");
         }
     }
     catch(std::exception& ex)
     {
         char* logMsg;
         sprintf(logMsg, "An exception occurred while building the json message: %s\n", ex.what());
-        _logger->error(logMsg);
+        _logger.error(logMsg);
     }
 
     return result;

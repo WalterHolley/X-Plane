@@ -9,41 +9,17 @@
 #define XPLM400
 
 #include<XPLM/XPLMProcessing.h>
-#include "include/DataProcessor.h"
+#include "include/PluginMenu.h"
 #include "include/Logger.h"
 
 
 
-//Planned use APIs
-//https://developer.x-plane.com/sdk/XPLMDataAccess/
-
-DataProcessor* dataProcessor;
 Logger* _log;
-
-float PollData()
-{
-    float result = 0.0;
-
-    if(dataProcessor->hasInited())
-    {
-
-        //open data collection
-        _log->info("Retrieving data");
-        result = 1.0;
-    }
-    else
-    {
-        _log->info("Initing data collection process.");
-        dataProcessor->start();
-        result  = 1.0;
-    }
-
-    return result;
-}
+PluginMenu* _menu;
 
 void cleanup()
 {
-    free(dataProcessor);
+
     free(_log);
 }
 
@@ -51,7 +27,8 @@ void cleanup()
 PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
 {
     _log = new Logger();
-    dataProcessor = new DataProcessor(_log);
+    Logger &log = *_log;
+    _menu = new PluginMenu(log);
     //basic plugin information
     strcpy(name, "BeigeBox");
     strcpy(sig, "com.avidata.recorder");
@@ -59,25 +36,12 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
 
 
     //register callback
-    XPLMRegisterFlightLoopCallback((XPLMFlightLoop_f)PollData, -1, NULL);
     return 1;
 }
 
 PLUGIN_API void XPluginStop(void)
 {
-    //end network connection
-    if(dataProcessor->hasInited())
-    {
-        dataProcessor->stop();
-    }
-
-    //destroy callback
-    XPLMUnregisterFlightLoopCallback((XPLMFlightLoop_f)PollData, NULL);
     cleanup();
-
-
-
-
 }
 
 PLUGIN_API int XPluginEnable(void)
@@ -86,8 +50,10 @@ PLUGIN_API int XPluginEnable(void)
 
     try
     {
-        if(_log && dataProcessor)
+
+        if(_log && _menu)
         {
+            _menu->init();
             _log->info("Log started. Plugin enabled");
             result = 1;
         }
@@ -106,13 +72,7 @@ PLUGIN_API int XPluginEnable(void)
 
 PLUGIN_API void XPluginDisable(void)
 {
-
-    if(dataProcessor && dataProcessor->hasInited())
-    {
-        dataProcessor->stop();
-    }
     _log->info("Plugin disabled");
-
 }
 
 PLUGIN_API void XPluginReceiveMessage(void)

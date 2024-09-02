@@ -6,10 +6,18 @@
 #define PLUGINMENU_H
 
 #include <XPLM/XPLMMenus.h>
+#include "Logger.h"
+#include "DataProcessor.h"
 
 class PluginMenu {
 public:
+    PluginMenu(Logger &logger);
     void init();
+    ~PluginMenu();
+private:
+    bool _wasInited;
+    Logger _logger;
+    DataProcessor* _dataProcessor;
 };
 
 

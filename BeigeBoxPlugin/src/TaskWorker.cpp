@@ -12,7 +12,7 @@ using namespace  std;
 
 //*****Public Methods*****//
 
-TaskWorker::TaskWorker(Logger *logger)
+TaskWorker::TaskWorker(Logger &logger)
 {
     _log = logger;
     _isStopped = true;

@@ -19,7 +19,7 @@ int frameRate = 1000 / 60;
 
 //========CLASS METHODS===========//
 
-DataProcessor::DataProcessor(Logger* log)
+DataProcessor::DataProcessor(Logger &log)
 {
     _started = false;
     _inited = false;
@@ -53,7 +53,7 @@ void DataProcessor::init()
         {
             string message("An exception occurred while initializing data processing: ");
             message.append(ex.what());
-            _log->error(message);
+            _log.error(message);
             _started = false;
         }
     }
