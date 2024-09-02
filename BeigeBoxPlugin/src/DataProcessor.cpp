@@ -19,6 +19,8 @@ int frameRate = 1000 / 60;
 
 //========CLASS METHODS===========//
 
+DataProcessor::DataProcessor() {}
+
 DataProcessor::DataProcessor(Logger &log)
 {
     _started = false;

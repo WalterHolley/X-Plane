@@ -10,40 +10,75 @@ int pluginSubMenuId;
 const char* BASE_MENU_NAME = "BeigeBox";
 const char* START_RECORDING = "Start Recording";
 const char* STOP_RECORDING = "Stop Recording";
+
 XPLMMenuID xplmMenuIdentifier;
+static DataProcessor dataProcessor;
+static Logger logger;
 
-static void menuCallback(void * inMenuRef, void * initemRef );
 
 
-PluginMenu::PluginMenu(Logger &logger)
+PluginMenu::PluginMenu(Logger &log, DataProcessor &processor)
 {
-    _logger = logger;
-    _dataProcessor = new DataProcessor(logger);
+    logger = log;
+    dataProcessor = processor;
 }
 
 void PluginMenu::init()
 {
 
-     pluginSubMenuId = XPLMAppendMenuItem( XPLMFindPluginsMenu(), BASE_MENU_NAME, 0, 1);
-     xplmMenuIdentifier = XPLMCreateMenu(BASE_MENU_NAME, XPLMFindPluginsMenu(), pluginSubMenuId, menuCallback, 0);
-     XPLMAppendMenuItem(xplmMenuIdentifier, START_RECORDING, (void*) 1,1);
-     XPLMAppendMenuItem(xplmMenuIdentifier, STOP_RECORDING, (void*) 2, 1);
+    if(!_wasInited)
+    {
+        pluginSubMenuId = XPLMAppendMenuItem( XPLMFindPluginsMenu(), BASE_MENU_NAME, 0, 1);
+        xplmMenuIdentifier = XPLMCreateMenu(BASE_MENU_NAME, XPLMFindPluginsMenu(), pluginSubMenuId, PluginMenu::menuCallback, 0);
+        XPLMAppendMenuItem(xplmMenuIdentifier, START_RECORDING, (void*) 1,1);
+        XPLMAppendMenuItem(xplmMenuIdentifier, STOP_RECORDING, (void*) 2, 1);
+        XPLMEnableMenuItem(xplmMenuIdentifier, 2, 0);
+        _wasInited = true;
+        logger.info("Menu Inited");
+    }
+
 }
 
 PluginMenu::~PluginMenu() {
-    free(_dataProcessor);
+    XPLMDestroyMenu(xplmMenuIdentifier);
 }
 
-void menuCallback(void* menuRef, void* itemRef)
+void PluginMenu::start()
+{
+
+    if(dataProcessor.hasInited())
+    {
+        logger.debug("Start selected from menu");
+        dataProcessor.start();
+        XPLMEnableMenuItem(xplmMenuIdentifier,1, 0);
+        XPLMEnableMenuItem(xplmMenuIdentifier, 2, 1);
+    }
+
+}
+
+void PluginMenu::stop()
+{
+    if(dataProcessor.hasInited())
+    {
+        logger.debug("Stop selected from menu");
+        dataProcessor.stop();
+        XPLMEnableMenuItem(xplmMenuIdentifier,1, 1);
+        XPLMEnableMenuItem(xplmMenuIdentifier,2, 0);
+    }
+}
+
+void PluginMenu::menuCallback(void* menuRef, void* itemRef)
 {
 
     switch((intptr_t) itemRef)
     {
         case 1:
             //start recording
+            start();
             break;
         case 2:
             //stop recording
+            stop();
             break;
         default:
             break;

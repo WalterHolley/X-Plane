@@ -15,20 +15,24 @@
 
 
 Logger* _log;
+DataProcessor* _dataProcessor;
 PluginMenu* _menu;
 
 void cleanup()
 {
 
     free(_log);
+    free(_dataProcessor);
+    free(_menu);
 }
 
 //***** X-PLANE plugin methods *****//
 PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
 {
     _log = new Logger();
-    Logger &log = *_log;
-    _menu = new PluginMenu(log);
+    _dataProcessor = new DataProcessor(*_log);
+
+    _menu = new PluginMenu(*_log, *_dataProcessor);
     //basic plugin information
     strcpy(name, "BeigeBox");
     strcpy(sig, "com.avidata.recorder");

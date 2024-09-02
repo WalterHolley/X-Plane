@@ -11,13 +11,15 @@
 
 class PluginMenu {
 public:
-    PluginMenu(Logger &logger);
+    PluginMenu(Logger &logger, DataProcessor &processor);
     void init();
     ~PluginMenu();
 private:
     bool _wasInited;
-    Logger _logger;
-    DataProcessor* _dataProcessor;
+    static void start();
+    static void stop();
+    static void menuCallback(void * inMenuRef, void * initemRef );
+
 };
 
 
