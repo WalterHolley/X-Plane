@@ -8,6 +8,7 @@
 #include "Logger.h"
 #include "DataUtil.h"
 #include "Recorder.h"
+#include "TaskWorker.h"
 #include <string>
 #include <vector>
 #include <future>
@@ -24,6 +25,7 @@ class DataProcessor
     private:
         Logger* _log;
         Recorder* _dataRecorder;
+        TaskWorker* _taskWorker;
         bool _started;
         bool _inited;
         DataUtil* _dataUtil;

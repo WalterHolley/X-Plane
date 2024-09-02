@@ -17,11 +17,13 @@ public:
     TaskWorker(Logger* logger);
     ~TaskWorker();
     bool isTaskQueued();
+    bool isStarted();
     void stop();
     void push(std::function<void()> task);
 private:
     std::deque<std::function<void()>> taskQueue;
     std::mutex operationMutex;
+    std::future<void> workerLoopFuture;
     void executeTasks();
     Logger* _log;
     bool _isStopped;

@@ -1,32 +1,19 @@
 #define MAX_BUFFER 20480
 
-#ifdef IBM
-#include<winsock2.h>
-#include<windows.h>
-#endif
 
 #include "include/DataProcessor.h"
-#include <boost/asio.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/chrono.hpp>
 #include <thread>
-
 #include <fstream>
 #include <string>
 
 
 using namespace std;
-using namespace boost;
-
-
 
 dataFrame df;
 dataFrame* dfPtr;
 string TEMP_SESSION = "NORTHWIND_AI";
-boost::asio::thread_pool taskPool(1);
 future<void> processingFuture;
 int frameRate = 1000 / 60;
-
 
 
 
@@ -37,7 +24,9 @@ DataProcessor::DataProcessor(Logger* log)
     _started = false;
     _inited = false;
     _dataUtil = new DataUtil(log);
+    _taskWorker = new TaskWorker(log);
     _log = log;
+
 }
 
 void DataProcessor::init()
@@ -103,12 +92,17 @@ bool  DataProcessor::hasInited()
 void DataProcessor::dataLoop()
 {
     while (_started) {
-        boost::chrono::time_point start = boost::chrono::steady_clock::now() + boost::chrono::milliseconds(frameRate);
-        auto task = bind(&DataProcessor::writeLoop, this);
-        boost::asio::post(taskPool, task);
-        boost::this_thread::sleep_until(start);
+        std::chrono::time_point start = std::chrono::steady_clock::now() + std::chrono::milliseconds(frameRate);
+
+        if(!_taskWorker->isStarted())
+        {
+            _taskWorker->start();
+        }
+        auto task = [this](){dataLoop();};
+        _taskWorker->push(task);
+        std::this_thread::sleep_until(start);
     }
-    taskPool.join();
+    _taskWorker->stop();
 }
 
 void DataProcessor::writeLoop()
@@ -122,6 +116,7 @@ DataProcessor::~DataProcessor()
 {
     free(_dataRecorder);
     free(_dataUtil);
+    free(_taskWorker);
     free(dfPtr);
 }
 
