@@ -9,22 +9,55 @@
 #define XPLM400
 
 #include<XPLM/XPLMProcessing.h>
-#include "include/PluginMenu.h"
+#include<XPLM/XPLMMenus.h>
+#include "include/DataProcessor.h"
 #include "include/Logger.h"
 
 
 
 Logger* _log;
 DataProcessor* _dataProcessor;
-PluginMenu* _menu;
+XPLMMenuID xplmMenuIdentifier;
+int pluginSubMenuId;
+const char* BASE_MENU_NAME = "BeigeBox";
+const char* START_RECORDING = "Start Recording";
+const char* STOP_RECORDING = "Stop Recording";
+
+static void menuCallback(void* inMenuRef, void* inItemRef);
 
 void cleanup()
 {
-
     free(_log);
     free(_dataProcessor);
-    free(_menu);
 }
+
+void start()
+{
+
+    if(_dataProcessor->hasInited())
+    {
+        _log->debug("Start selected from menu");
+        _dataProcessor->start();
+        XPLMEnableMenuItem(xplmMenuIdentifier,1, 0);
+        XPLMEnableMenuItem(xplmMenuIdentifier, 2, 1);
+    }
+
+}
+
+void stop()
+{
+    if(_dataProcessor->hasInited())
+    {
+        _log->debug("Stop selected from menu");
+        _dataProcessor->stop();
+        XPLMEnableMenuItem(xplmMenuIdentifier,1, 1);
+        XPLMEnableMenuItem(xplmMenuIdentifier,2, 0);
+    }
+}
+
+
+
+
 
 //***** X-PLANE plugin methods *****//
 PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
@@ -32,14 +65,18 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
     _log = new Logger();
     _dataProcessor = new DataProcessor(*_log);
 
-    _menu = new PluginMenu(*_log, *_dataProcessor);
     //basic plugin information
     strcpy(name, "BeigeBox");
     strcpy(sig, "com.avidata.recorder");
     strcpy(desc, "Sim Flight Event Recorder for varied data");
 
+    //menu setup
+    pluginSubMenuId = XPLMAppendMenuItem( XPLMFindPluginsMenu(), BASE_MENU_NAME, 0, 1);
+    xplmMenuIdentifier = XPLMCreateMenu(BASE_MENU_NAME, XPLMFindPluginsMenu(), pluginSubMenuId, menuCallback, 0);
+    XPLMAppendMenuItem(xplmMenuIdentifier, START_RECORDING, (void*) 1,1);
+    XPLMAppendMenuItem(xplmMenuIdentifier, STOP_RECORDING, (void*) 2, 1);
+    XPLMEnableMenuItem(xplmMenuIdentifier, 2, 0);
 
-    //register callback
     return 1;
 }
 
@@ -55,9 +92,8 @@ PLUGIN_API int XPluginEnable(void)
     try
     {
 
-        if(_log && _menu)
+        if(_log)
         {
-            _menu->init();
             _log->info("Log started. Plugin enabled");
             result = 1;
         }
@@ -82,6 +118,27 @@ PLUGIN_API void XPluginDisable(void)
 PLUGIN_API void XPluginReceiveMessage(void)
 {
 
+}
+
+void menuCallback(void* menuRef, void* itemRef)
+{
+
+    switch((intptr_t) itemRef)
+    {
+        case 1:
+            _log->info("MENU:  BBPlugin->Start Selected");
+            //start recording
+            start();
+            break;
+        case 2:
+            //stop recording
+            _log->info("MENU:  BBPlugin->Stop Selected");
+            stop();
+            break;
+        default:
+            break;
+
+    }
 }
 
 

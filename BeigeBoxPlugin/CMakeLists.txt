@@ -37,20 +37,20 @@ set(PUBLIC_SOURCE
 set(PRIVATE_SOURCE
         "${PROJECT_ROOT}/SDK/cwic/include/c_headers.h"
         "${PROJECT_ROOT}/SDK/sqlite/sqlite3.h"
+        "src/include/TaskWorker.h"
         "src/include/DataUtil.h"
         "src/include/DataProcessor.h"
         "src/include/UDPClient.h"
         "src/include/Logger.h"
         "src/include/BBTypes.h"
         "src/include/Recorder.h"
-        "src/include/PluginMenu.h"
         "${PROJECT_ROOT}/SDK/sqlite/sqlite3.c"
         "src/UDPClient.cpp"
         "src/DataUtil.cpp"
         "src/DataProcessor.cpp"
         "src/Logger.cpp"
         "src/Recorder.cpp"
-        "src/PluginMenu.cpp" src/include/TaskWorker.h src/TaskWorker.cpp)
+        "src/TaskWorker.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE})
 
@@ -70,10 +70,7 @@ if(WIN32)
     target_link_libraries( ${PROJECT_NAME}
             -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/XPLM_64.lib
             -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/Libraries/Win/XPWidgets_64.lib
-            ${PROJECT_ROOT}/SDK/cwic/lib/cwic_lib.dll
-            ${PROJECT_ROOT}/SDK/Libraries/Win/cygboost_chrono.dll
-            ${PROJECT_ROOT}/SDK/Libraries/Win/cygboost_context.dll
-
+            -static -static-libgcc -static-libstdc++ ${PROJECT_ROOT}/SDK/cwic/lib/cwic_lib.dll
             "ws2_32")
 elseif (APPLE)
     add_definitions(-DAPL=1)
