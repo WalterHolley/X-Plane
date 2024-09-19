@@ -4,6 +4,8 @@
 #include "include/DataProcessor.h"
 #include <thread>
 #include <fstream>
+#include <filesystem>
+#include<sstream>
 #include <string>
 
 
@@ -21,14 +23,14 @@ int frameRate = 1000 / 60;
 
 DataProcessor::DataProcessor() {}
 
-DataProcessor::DataProcessor(Logger &log)
+DataProcessor::DataProcessor(Logger *log)
 {
     _started = false;
     _inited = false;
     _dataUtil = new DataUtil(log);
     _taskWorker = new TaskWorker(log);
     _log = log;
-
+    _log->info("DataProcessor: Instanced");
 }
 
 void DataProcessor::init()
@@ -38,24 +40,41 @@ void DataProcessor::init()
         try
         {
             //Load json
-            char* content;
-            ifstream json;
-            json.open("../res/datarefs.json");
-            json.read(content, json.gcount());
-            //convert to dataframe
-            string jsn(content);
-            df = _dataUtil->getScenarioData(jsn);
-            dfPtr = new dataFrame;
-            *dfPtr = df;
-            _dataRecorder = new Recorder(TEMP_SESSION, dfPtr, _log);
-            _inited = true;
+            stringstream content;
+            string jsn;
+            _log->debug("DataProcessor: Current path: " + filesystem::current_path().string());
+            ifstream json("datarefs.json");
+            //TODO: fix file load
+            if(json.good())
+            {
+                while(getline(json, jsn))
+                {
+                    content << jsn;
+                }
+
+                //convert to dataframe
+                jsn = content.str();
+                df = _dataUtil->getScenarioData(jsn);
+                dfPtr = new dataFrame;
+                *dfPtr = df;
+                _dataRecorder = new Recorder(TEMP_SESSION, dfPtr, _log);
+                _inited = true;
+                json.close();
+                _log->info("DataProcessor: Initialization successful");
+            }
+            else
+            {
+                _log->error("DataProcessor: Init failed. Could not open json file");
+            }
+
+
 
         }
         catch(std::exception& ex)
         {
-            string message("An exception occurred while initializing data processing: ");
+            string message("DataProcessor: Init Failed: ");
             message.append(ex.what());
-            _log.error(message);
+            _log->error(message);
             _started = false;
         }
     }
@@ -99,7 +118,7 @@ void DataProcessor::dataLoop()
         if(!_taskWorker->isStarted())
         {
             _taskWorker->start();
-            _log.info("Task Worker initiated");
+            _log->info("Task Worker initiated");
         }
         auto task = [this](){dataLoop();};
         _taskWorker->push(task);

@@ -12,7 +12,7 @@ using namespace  std;
 
 //*****Public Methods*****//
 
-TaskWorker::TaskWorker(Logger &logger)
+TaskWorker::TaskWorker(Logger* logger)
 {
     _log = logger;
     _isStopped = true;
@@ -22,7 +22,7 @@ void TaskWorker::push(std::function<void()> task)
 {
     lock_guard<mutex> lockGuard(operationMutex);
     taskQueue.push_back(task);
-    _log.debug("Task Queued");
+    _log->debug("TaskWorker: Task Queued");
 }
 
 bool TaskWorker::isTaskQueued()
@@ -38,7 +38,7 @@ void TaskWorker::start()
        workerLoopFuture = async(&TaskWorker::executeTasks, this);
        lock_guard<mutex> lockGuard(operationMutex);
        _isStopped = false;
-       _log.info("Task Worker Started");
+       _log->info("TaskWorker: Task Worker Started");
     }
 
 }
@@ -48,7 +48,7 @@ void TaskWorker::stop()
     lock_guard<mutex> lockGuard(operationMutex);
     _isStopped = true;
     workerLoopFuture.wait();
-    _log.info("Task Worker Stopped");
+    _log->info("Task Worker Stopped");
 }
 
 bool TaskWorker::isStarted()
@@ -67,11 +67,11 @@ void TaskWorker::executeTasks()
 
             thread t(std::move(task));
 
-            _log.debug("Task started");
+            _log->debug("Task started");
             lock_guard<mutex> lockGuard(operationMutex);
             t.join();
             taskQueue.pop_front();
-            _log.debug("Task completed");
+            _log->debug("Task completed");
         }
 
     }

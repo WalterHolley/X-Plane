@@ -63,8 +63,8 @@ void stop()
 PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
 {
     _log = new Logger();
-    _dataProcessor = new DataProcessor(*_log);
-
+    _dataProcessor = new DataProcessor(_log);
+    _dataProcessor->init();
     //basic plugin information
     strcpy(name, "BeigeBox");
     strcpy(sig, "com.avidata.recorder");
@@ -75,7 +75,7 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
     xplmMenuIdentifier = XPLMCreateMenu(BASE_MENU_NAME, XPLMFindPluginsMenu(), pluginSubMenuId, menuCallback, 0);
     XPLMAppendMenuItem(xplmMenuIdentifier, START_RECORDING, (void*) 1,1);
     XPLMAppendMenuItem(xplmMenuIdentifier, STOP_RECORDING, (void*) 2, 1);
-    XPLMEnableMenuItem(xplmMenuIdentifier, 2, 0);
+    XPLMEnableMenuItem(xplmMenuIdentifier, 1, 0);
 
     return 1;
 }
@@ -89,23 +89,11 @@ PLUGIN_API int XPluginEnable(void)
 {
     int result = 0;
 
-    try
-    {
-
         if(_log)
         {
             _log->info("Log started. Plugin enabled");
             result = 1;
         }
-
-    }
-    catch(std::exception& ex)
-    {
-       string message("There was a problem enabling the plugin: ");
-       message.append(ex.what());
-       _log->error(message);
-       cleanup();
-    }
 
     return result;
 }
@@ -122,7 +110,7 @@ PLUGIN_API void XPluginReceiveMessage(void)
 
 void menuCallback(void* menuRef, void* itemRef)
 {
-
+    _log->debug("Menu item selected");
     switch((intptr_t) itemRef)
     {
         case 1:
@@ -136,6 +124,7 @@ void menuCallback(void* menuRef, void* itemRef)
             stop();
             break;
         default:
+            _log->error("MENU: unknown menu item selected");
             break;
 
     }

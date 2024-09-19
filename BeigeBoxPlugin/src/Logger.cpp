@@ -47,7 +47,11 @@ void writeToLog(const char* &level, string &message)
     ss << put_time(localtime(&t), "%m-%d-%Y:%X");
     logEntry = str(format("[%s]:%s=>%s") % level % ss.str() % message);
     if(logFile.is_open())
+    {
         logFile << logEntry << endl;
+        logFile.flush();
+    }
+
 
 }
 

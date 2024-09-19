@@ -14,7 +14,7 @@ class TaskWorker
 {
 public:
     void start();
-    TaskWorker(Logger &logger);
+    TaskWorker(Logger *logger);
     ~TaskWorker();
     bool isTaskQueued();
     bool isStarted();
@@ -25,7 +25,7 @@ private:
     std::mutex operationMutex;
     std::future<void> workerLoopFuture;
     void executeTasks();
-    Logger _log;
+    Logger* _log;
     bool _isStopped;
 };
 

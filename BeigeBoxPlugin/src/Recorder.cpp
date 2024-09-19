@@ -113,7 +113,7 @@ bool fileExists(string &fileName)
 
 //=====PUBLIC METHODS=====//
 
-Recorder::Recorder(std::string &sessionId, dataFrame* df, Logger &logger) {
+Recorder::Recorder(std::string &sessionId, dataFrame* df, Logger *logger) {
     sessionIdentifier = sessionId;
     recorderData = df;
     _log = logger;
@@ -133,7 +133,7 @@ bool Recorder::init()
         {
             char* errMsg;
             sprintf(errMsg, "Could not open db: %d", ec);
-            _log.error(errMsg);
+            _log->error(errMsg);
         }
         else if(!dbExisted)
         {
@@ -171,12 +171,12 @@ void Recorder::write()
             }
             else
             {
-                _log.error("Could not insert state: " + string(errMsg));
+                _log->error("Could not insert state: " + string(errMsg));
             }
 
             if(ec != SQLITE_OK)
             {
-                _log.error("Could not write to supporting tables: " +string(errMsg));
+                _log->error("Could not write to supporting tables: " +string(errMsg));
             }
         }
 
@@ -194,17 +194,17 @@ bool Recorder::writeSchema()
     schema += createTable(dataElement::INSTRUCTIONS);
     schema += createTable(dataElement::FAILURES);
 
-    _log.debug("SQL Create Table Statement: " + schema);
+    _log->debug("SQL Create Table Statement: " + schema);
 
     int code = sqlite3_exec(db, schema.c_str(), NULL, 0, &errMsg);
 
     if(code != SQLITE_OK)
     {
-        _log.error("DB Schema could not be implemented");
+        _log->error("DB Schema could not be implemented");
     }
     else
     {
-        _log.info("DB setup successful");
+        _log->info("DB setup successful");
         result = true;
     }
 
@@ -257,7 +257,7 @@ string Recorder::createInsertStatement(vector<dataStruct> values, const char* &t
     }
 
     insertStatement += columnsSection + valuesSection + ";";
-    _log.debug("INSERT Statement: " + insertStatement);
+    _log->debug("INSERT Statement: " + insertStatement);
 
     return insertStatement;
 }
