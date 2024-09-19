@@ -58,6 +58,7 @@ void DataProcessor::init()
                 dfPtr = new dataFrame;
                 *dfPtr = df;
                 _dataRecorder = new Recorder(TEMP_SESSION, dfPtr, _log);
+                _dataRecorder->init();
                 _inited = true;
                 json.close();
                 _log->info("DataProcessor: Initialization successful");
@@ -118,9 +119,9 @@ void DataProcessor::dataLoop()
         if(!_taskWorker->isStarted())
         {
             _taskWorker->start();
-            _log->info("Task Worker initiated");
+            _log->info("DataProcessor: Task Worker initiated");
         }
-        auto task = [this](){dataLoop();};
+        auto task = [this](){_dataRecorder->write();};
         _taskWorker->push(task);
         std::this_thread::sleep_until(start);
     }

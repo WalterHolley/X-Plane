@@ -48,7 +48,7 @@ void TaskWorker::stop()
     lock_guard<mutex> lockGuard(operationMutex);
     _isStopped = true;
     workerLoopFuture.wait();
-    _log->info("Task Worker Stopped");
+    _log->info("TaskWorker: Task Worker Stopped");
 }
 
 bool TaskWorker::isStarted()
@@ -67,11 +67,11 @@ void TaskWorker::executeTasks()
 
             thread t(std::move(task));
 
-            _log->debug("Task started");
+            _log->debug("TaskWorker: Executing Task");
             lock_guard<mutex> lockGuard(operationMutex);
             t.join();
             taskQueue.pop_front();
-            _log->debug("Task completed");
+            _log->debug("TaskWorker: Executed Task completed");
         }
 
     }
