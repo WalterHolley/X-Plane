@@ -29,7 +29,7 @@ string createColumns(vector<dataStruct> columns)
             columnStatement += ", ";
         }
 
-        columnStatement += "\"" + to_string(i->index) + "\"";
+        columnStatement += to_string(i->index);
         switch(i->unitsEnum)
         {
             case DEG:
@@ -71,26 +71,24 @@ string createTable(dataElement element, dataFrame &recorderData)
     const string idRow = "ID INTEGER PRIMARY KEY AUTOINCREMENT, TIMESTAMP NUMERIC NOT NULL";
     const string stateKeyRow = idRow + ",STATE_ID INTEGER NOT NULL";
     createStatement = "CREATE TABLE ";
+    string tableName =  dataElementString[element];
 
+    createStatement += tableName + "(";
     switch(element)
     {
         case STATE:
-            createStatement += "\"STATES\" (";
             createStatement += idRow;
             createStatement += createColumns(recorderData.state);
             break;
         case INPUTS:
-            createStatement += "\"INPUTS\" (";
             createStatement += stateKeyRow;
             createStatement += createColumns(recorderData.inputs);
             break;
         case INSTRUCTIONS:
-            createStatement += "\"INSTRUCTIONS\" (";
             createStatement += stateKeyRow;
             createStatement += createColumns(recorderData.instructions);
             break;
         case FAILURES:
-            createStatement += "\"FAILURES\" (";
             createStatement += stateKeyRow;
             createStatement += createColumns(recorderData.failures);
             break;
@@ -220,8 +218,8 @@ bool Recorder::writeSchema(dataFrame &df)
 string Recorder::createInsertStatement(vector<dataStruct> values, const char* &tableName, uint64_t &timestamp, uint64_t &stateId)
 {
     string insertStatement;
-    string columnsSection = "(TIMESTAMP, ";
-    string valuesSection = "VALUES(" + to_string(timestamp) + ", ";
+    string columnsSection = "(TIMESTAMP";
+    string valuesSection = "VALUES(" + to_string(timestamp);
 
     insertStatement = "INSERT INTO " + string(tableName) + " ";
 
@@ -239,7 +237,13 @@ string Recorder::createInsertStatement(vector<dataStruct> values, const char* &t
 
     for(auto i = values.begin(); i != values.end(); ++i)
     {
-        columnsSection += i->index;
+        if(i != values.end())
+        {
+            columnsSection += ", ";
+            valuesSection += ", ";
+        }
+
+        columnsSection += to_string(i->index);
         if(i->unitsEnum == units::TEXT)
         {
             valuesSection += "'" + i->value + "'";
@@ -248,21 +252,12 @@ string Recorder::createInsertStatement(vector<dataStruct> values, const char* &t
         {
             valuesSection += i->value;
         }
-
-
-        if(i != values.end())
-        {
-            columnsSection += ", ";
-            valuesSection += ", ";
-        }
-        else
-        {
-            columnsSection += ")";
-            valuesSection += ")";
-        }
     }
 
-    insertStatement += columnsSection + valuesSection + ";";
+    columnsSection += ")";
+    valuesSection += ")";
+
+    insertStatement += columnsSection + " " + valuesSection + ";";
     _log->debug("Recorder: INSERT Statement: " + insertStatement);
 
     return insertStatement;
