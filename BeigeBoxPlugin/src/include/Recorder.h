@@ -11,14 +11,14 @@
 class Recorder
 {
 public:
-    Recorder(std::string &sessionId, dataFrame* df, Logger *logger);
-    void write();
-    bool init();
+    Recorder(std::string &sessionId, Logger *logger);
+    void write(dataFrame &df);
+    bool init(dataFrame &df);
     ~Recorder();
 private:
     int ec;
     Logger* _log;
-    bool writeSchema();
+    bool writeSchema(dataFrame &df);
     std::string createInsertStatement(std::vector<dataStruct> values, const char* &tableName, uint64_t &timestamp, uint64_t &stateId);
 
 };

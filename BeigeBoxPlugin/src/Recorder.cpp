@@ -13,7 +13,7 @@ using namespace std;
 sqlite3* db;
 
 bool wasInited = false;
-dataFrame* recorderData;
+
 
 string sessionIdentifier;
 string dbName;
@@ -21,9 +21,15 @@ string dbName;
 string createColumns(vector<dataStruct> columns)
 {
     string columnStatement;
-    for(auto i = columns.begin(); i != columns.end(); ++i)
+    for(auto i = columns.begin(); i != columns.end(); i++)
     {
-        columnStatement += i->index;
+        //add statement separator
+        if(i != columns.end())
+        {
+            columnStatement += ", ";
+        }
+
+        columnStatement += "\"" + to_string(i->index) + "\"";
         switch(i->unitsEnum)
         {
             case DEG:
@@ -52,48 +58,41 @@ string createColumns(vector<dataStruct> columns)
                 break;
         }
 
-        //add statement separator
-        if(i != columns.end())
-        {
-            columnStatement += ", ";
-        }
+
 
     }
 
     return columnStatement;
 }
 
-string createTable(dataElement element)
+string createTable(dataElement element, dataFrame &recorderData)
 {
     string createStatement;
-    const char*  idRow = "ID INT PRIMARY KEY NOT NULL, TIMESTAMP NUMERIC NOT NULL, ";
-    const char* stateKeyRow = "STATE_ID INT NOT NULL, ";
+    const string idRow = "ID INTEGER PRIMARY KEY AUTOINCREMENT, TIMESTAMP NUMERIC NOT NULL";
+    const string stateKeyRow = idRow + ",STATE_ID INTEGER NOT NULL";
     createStatement = "CREATE TABLE ";
 
     switch(element)
     {
         case STATE:
-            createStatement += "STATES (";
+            createStatement += "\"STATES\" (";
             createStatement += idRow;
-            createStatement += createColumns(recorderData->state);
+            createStatement += createColumns(recorderData.state);
             break;
         case INPUTS:
-            createStatement += "INPUTS (";
-            createStatement += idRow;
+            createStatement += "\"INPUTS\" (";
             createStatement += stateKeyRow;
-            createStatement += createColumns(recorderData->inputs);
+            createStatement += createColumns(recorderData.inputs);
             break;
         case INSTRUCTIONS:
-            createStatement += "INSTRUCTIONS (";
-            createStatement += idRow;
+            createStatement += "\"INSTRUCTIONS\" (";
             createStatement += stateKeyRow;
-            createStatement += createColumns(recorderData->instructions);
+            createStatement += createColumns(recorderData.instructions);
             break;
         case FAILURES:
-            createStatement += "FAILURES (";
-            createStatement += idRow;
+            createStatement += "\"FAILURES\" (";
             createStatement += stateKeyRow;
-            createStatement += createColumns(recorderData->failures);
+            createStatement += createColumns(recorderData.failures);
             break;
     }
 
@@ -113,14 +112,13 @@ bool fileExists(string &fileName)
 
 //=====PUBLIC METHODS=====//
 
-Recorder::Recorder(std::string &sessionId, dataFrame* df, Logger *logger) {
+Recorder::Recorder(std::string &sessionId, Logger *logger) {
     sessionIdentifier = sessionId;
-    recorderData = df;
     _log = logger;
     _log->debug("Recorder: Recorder Instanced");
 }
 
-bool Recorder::init()
+bool Recorder::init(dataFrame &recorderData)
 {
 
     if(!wasInited)
@@ -137,8 +135,16 @@ bool Recorder::init()
         }
         else if(!dbExisted)
         {
-            wasInited = writeSchema();
-            _log->info("Recorder: Database Inited");
+            wasInited = writeSchema(recorderData);
+            if(wasInited)
+            {
+                _log->info("Recorder: Database Inited");
+            }
+            else
+            {
+                _log->error("Recorder: Schema write failed");
+            }
+
         }
         else
         {
@@ -150,51 +156,49 @@ bool Recorder::init()
     return wasInited;
 }
 
-void Recorder::write()
+void Recorder::write(dataFrame &recorderData)
 {
     char* errMsg;
-    if(recorderData)
+
+    if(((!ec) || ec == SQLITE_OK) && wasInited)
     {
-        if(((!ec) || ec == SQLITE_OK) && wasInited)
+        uint64_t t = chrono::time_point_cast<chrono::seconds>(chrono::system_clock::now()).time_since_epoch().count();
+        string statement = createInsertStatement(recorderData.state, dataElementString[dataElement::STATE], t, t);
+
+        ec = sqlite3_exec(db, statement.c_str(), NULL, 0, &errMsg);
+
+        if((!ec) || ec == SQLITE_OK)
         {
-            uint64_t t = chrono::time_point_cast<chrono::seconds>(chrono::system_clock::now()).time_since_epoch().count();
-            string statement = createInsertStatement(recorderData->state, dataElementString[dataElement::STATE], t, t);
+             sqlite3_uint64 rowId = sqlite3_last_insert_rowid(db);
+             statement = createInsertStatement(recorderData.inputs, dataElementString[dataElement::INPUTS], t, rowId);
+             statement += createInsertStatement(recorderData.instructions, dataElementString[dataElement::INSTRUCTIONS], t, rowId);
+             statement += createInsertStatement(recorderData.failures, dataElementString[dataElement::FAILURES], t, rowId);
+             ec = sqlite3_exec(db, statement.c_str(), NULL, 0, &errMsg);
 
-            ec = sqlite3_exec(db, statement.c_str(), NULL, 0, &errMsg);
-
-            if((!ec) || ec == SQLITE_OK)
-            {
-                 sqlite3_uint64 rowId = sqlite3_last_insert_rowid(db);
-                 statement = createInsertStatement(recorderData->inputs, dataElementString[dataElement::INPUTS], t, rowId);
-                 statement += createInsertStatement(recorderData->instructions, dataElementString[dataElement::INSTRUCTIONS], t, rowId);
-                 statement += createInsertStatement(recorderData->failures, dataElementString[dataElement::FAILURES], t, rowId);
-                 ec = sqlite3_exec(db, statement.c_str(), NULL, 0, &errMsg);
-
-            }
-            else
-            {
-                _log->error("Recorder: Could not insert state: " + string(errMsg));
-            }
-
-            if(ec != SQLITE_OK)
-            {
-                _log->error("Recorder: Could not write to supporting tables: " +string(errMsg));
-            }
+        }
+        else
+        {
+            _log->error("Recorder: Could not insert state: " + string(errMsg));
         }
 
+        if(ec != SQLITE_OK)
+        {
+            _log->error("Recorder: Could not write to supporting tables: " +string(errMsg));
+        }
     }
+
 
 }
 
 //********PRIVATE METHODS********//
-bool Recorder::writeSchema()
+bool Recorder::writeSchema(dataFrame &df)
 {
     char* errMsg;
     bool result = false;
-    string schema = createTable(dataElement::STATE);
-    schema += createTable(dataElement::INPUTS);
-    schema += createTable(dataElement::INSTRUCTIONS);
-    schema += createTable(dataElement::FAILURES);
+    string schema = createTable(dataElement::STATE, df);
+    schema += createTable(dataElement::INPUTS, df);
+    schema += createTable(dataElement::INSTRUCTIONS, df);
+    schema += createTable(dataElement::FAILURES, df);
 
     _log->debug("Recorder: SQL Create Table Statement: " + schema);
 
