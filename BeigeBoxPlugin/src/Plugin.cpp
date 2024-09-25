@@ -10,61 +10,102 @@
 
 #include<XPLM/XPLMProcessing.h>
 #include<XPLM/XPLMMenus.h>
-#include "include/DataProcessor.h"
+#include<fstream>
+#include<sstream>
+#include "include/DataUtil.h"
+#include "include/Recorder.h"
 #include "include/Logger.h"
 
 
 
 Logger* _log;
-DataProcessor* _dataProcessor;
+DataUtil* _dataUtil;
+Recorder* _recorder;
 XPLMMenuID xplmMenuIdentifier;
 int pluginSubMenuId;
 const char* BASE_MENU_NAME = "BeigeBox";
 const char* START_RECORDING = "Start Recording";
 const char* STOP_RECORDING = "Stop Recording";
+string TEST_DB = "NORTHWIND_AI";
+ifstream json("datarefs.json");
+bool record = false;
+dataFrame flightData;
+
+
 
 static void menuCallback(void* inMenuRef, void* inItemRef);
+static float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop, int count, void* refCon);
 
 void cleanup()
 {
+    XPLMUnregisterFlightLoopCallback(pollData, NULL);
     free(_log);
-    free(_dataProcessor);
+    free(_dataUtil);
+    free(_recorder);
 }
 
 void start()
 {
 
-    if(_dataProcessor->hasInited())
-    {
-        _log->debug("Start selected from menu");
-        _dataProcessor->start();
-        XPLMEnableMenuItem(xplmMenuIdentifier,1, 0);
-        XPLMEnableMenuItem(xplmMenuIdentifier, 2, 1);
-    }
+    _log->debug("Start selected from menu");
+    XPLMEnableMenuItem(xplmMenuIdentifier,1, 0);
+    XPLMEnableMenuItem(xplmMenuIdentifier, 2, 1);
+    record = true;
 
 }
 
 void stop()
 {
-    if(_dataProcessor->hasInited())
-    {
-        _log->debug("Stop selected from menu");
-        _dataProcessor->stop();
-        XPLMEnableMenuItem(xplmMenuIdentifier,1, 1);
-        XPLMEnableMenuItem(xplmMenuIdentifier,2, 0);
-    }
+
+    _log->debug("Stop selected from menu");
+
+    XPLMEnableMenuItem(xplmMenuIdentifier,1, 1);
+    XPLMEnableMenuItem(xplmMenuIdentifier,2, 0);
+    record = false;
+
 }
 
 
+float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop, int count, void* refCon)
+{
+    if(record)
+    {
+        _dataUtil->updateScenario(flightData);
+        _recorder->write(flightData);
+        _log->debug("BeigeBox: Recording completed");
+    }
+    else
+    {
+        _log->debug("BeigeBox: Recording Off");
+    }
 
+    return 1.0;
+}
 
 
 //***** X-PLANE plugin methods *****//
 PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
 {
     _log = new Logger();
-    _dataProcessor = new DataProcessor(_log);
-    _dataProcessor->init();
+    _dataUtil = new DataUtil(_log);
+    _recorder = new Recorder(TEST_DB, _log);
+    int result = 0;
+
+    if(json.good())
+    {
+        string jsn;
+        stringstream content;
+
+        while(getline(json, jsn))
+        {
+            content << jsn;
+        }
+        jsn = content.str();
+        flightData = _dataUtil->getScenarioData(jsn);
+        _recorder->init(flightData);
+        result = 1;
+    }
+
     //basic plugin information
     strcpy(name, "BeigeBox");
     strcpy(sig, "com.avidata.recorder");
@@ -77,7 +118,10 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
     XPLMAppendMenuItem(xplmMenuIdentifier, STOP_RECORDING, (void*) 2, 1);
     XPLMEnableMenuItem(xplmMenuIdentifier, 1, 0);
 
-    return 1;
+    XPLMRegisterFlightLoopCallback(pollData, 1.0, NULL);
+
+
+    return result;
 }
 
 PLUGIN_API void XPluginStop(void)
@@ -89,9 +133,9 @@ PLUGIN_API int XPluginEnable(void)
 {
     int result = 0;
 
-        if(_log)
+        if(_log && _recorder && _dataUtil)
         {
-            _log->info("Log started. Plugin enabled");
+            _log->info("Beigebox: Plugin enabled");
             result = 1;
         }
 
@@ -100,13 +144,14 @@ PLUGIN_API int XPluginEnable(void)
 
 PLUGIN_API void XPluginDisable(void)
 {
-    _log->info("Plugin disabled");
+    _log->info("BeigeBox: Plugin disabled");
 }
 
 PLUGIN_API void XPluginReceiveMessage(void)
 {
 
 }
+
 
 void menuCallback(void* menuRef, void* itemRef)
 {

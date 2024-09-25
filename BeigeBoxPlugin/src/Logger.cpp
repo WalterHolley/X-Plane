@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <syncstream>
 #include <ctime>
 #include <chrono>
 #include <mutex>
@@ -43,9 +44,13 @@ void writeToLog(const char* &level, string &message)
 {
     string logEntry;
     stringstream ss;
+    stringstream thread;
+
     t = chrono::system_clock::to_time_t(chrono::system_clock::now());
     ss << put_time(localtime(&t), "%m-%d-%Y:%X");
-    logEntry = str(format("[%s]:%s=>%s") % level % ss.str() % message);
+    thread << this_thread::get_id;
+
+    logEntry = str(format("[%s]:%s[Thread: %s]=>%s") % level % ss.str() % thread.str() % message);
     if(logFile.is_open())
     {
         logFile << logEntry << endl;

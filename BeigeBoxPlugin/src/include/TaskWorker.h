@@ -23,6 +23,8 @@ public:
 private:
     std::deque<std::function<void()>> taskQueue;
     std::mutex operationMutex;
+    std::condition_variable queueCondition;
+    std::condition_variable workerCondition;
     std::future<void> workerLoopFuture;
     void executeTasks();
     Logger* _log;

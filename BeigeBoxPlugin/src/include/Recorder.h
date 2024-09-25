@@ -12,7 +12,7 @@ class Recorder
 {
 public:
     Recorder(std::string &sessionId, Logger *logger);
-    void write(dataFrame &df);
+    void write(dataFrame const& df);
     bool init(dataFrame &df);
     ~Recorder();
 private:

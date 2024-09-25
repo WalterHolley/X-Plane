@@ -29,7 +29,7 @@ string createColumns(vector<dataStruct> columns)
             columnStatement += ", ";
         }
 
-        columnStatement += to_string(i->index);
+        columnStatement += "\"" + to_string(i->index) + "\"";
         switch(i->unitsEnum)
         {
             case DEG:
@@ -124,7 +124,6 @@ bool Recorder::init(dataFrame &recorderData)
         dbName = sessionIdentifier + ".db";
         bool  dbExisted = fileExists(dbName);
         ec = sqlite3_open(dbName.c_str(), &db);
-
         if(ec)
         {
             char* errMsg;
@@ -148,13 +147,14 @@ bool Recorder::init(dataFrame &recorderData)
         {
             wasInited = true;
             _log->info("Recorder: Database Inited");
+            sqlite3_close(db);
         }
     }
 
     return wasInited;
 }
 
-void Recorder::write(dataFrame &recorderData)
+void Recorder::write(dataFrame const& recorderData)
 {
     char* errMsg;
 
@@ -162,11 +162,12 @@ void Recorder::write(dataFrame &recorderData)
     {
         uint64_t t = chrono::time_point_cast<chrono::seconds>(chrono::system_clock::now()).time_since_epoch().count();
         string statement = createInsertStatement(recorderData.state, dataElementString[dataElement::STATE], t, t);
+        ec = sqlite3_open(dbName.c_str(), &db);
 
-        ec = sqlite3_exec(db, statement.c_str(), NULL, 0, &errMsg);
 
         if((!ec) || ec == SQLITE_OK)
         {
+             sqlite3_exec(db, statement.c_str(), NULL, 0, &errMsg);
              sqlite3_uint64 rowId = sqlite3_last_insert_rowid(db);
              statement = createInsertStatement(recorderData.inputs, dataElementString[dataElement::INPUTS], t, rowId);
              statement += createInsertStatement(recorderData.instructions, dataElementString[dataElement::INSTRUCTIONS], t, rowId);
@@ -183,6 +184,7 @@ void Recorder::write(dataFrame &recorderData)
         {
             _log->error("Recorder: Could not write to supporting tables: " +string(errMsg));
         }
+        sqlite3_close(db);
     }
 
 
@@ -230,8 +232,8 @@ string Recorder::createInsertStatement(vector<dataStruct> values, const char* &t
         case INSTRUCTIONS:
         case INPUTS:
         case FAILURES:
-            columnsSection += "STATE_ID, ";
-            valuesSection += to_string(stateId) + ", ";
+            columnsSection += ", STATE_ID";
+            valuesSection += ", " + to_string(stateId);
             break;
     }
 
@@ -243,7 +245,7 @@ string Recorder::createInsertStatement(vector<dataStruct> values, const char* &t
             valuesSection += ", ";
         }
 
-        columnsSection += to_string(i->index);
+        columnsSection += "\"" + to_string(i->index) + "\"";
         if(i->unitsEnum == units::TEXT)
         {
             valuesSection += "'" + i->value + "'";

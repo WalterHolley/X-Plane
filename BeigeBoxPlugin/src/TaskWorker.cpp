@@ -60,19 +60,22 @@ void TaskWorker::executeTasks()
 {
     while(!_isStopped)
     {
-        if(!taskQueue.empty())
-        {
-            auto func = taskQueue.front();
-            packaged_task<void()> task(func);
+        unique_lock<std::mutex> queueLock(operationMutex);
+        queueCondition.wait(queueLock, [this](){
+            _log->debug("Checking for tasks");
+            return !taskQueue.empty();
+        });
 
-            thread t(std::move(task));
+        auto func = taskQueue.front();
+        taskQueue.pop_front();
+        packaged_task<void()> task(func);
 
-            _log->debug("TaskWorker: Executing Task");
-            lock_guard<mutex> lockGuard(operationMutex);
-            t.join();
-            taskQueue.pop_front();
-            _log->debug("TaskWorker: Executed Task completed");
-        }
+        _log->debug("TaskWorker: Executing Task");
+        thread t(std::move(task));
+        lock_guard<mutex> lockGuard(operationMutex);
+        t.join();
+        _log->debug("TaskWorker: Executed Task completed");
+
 
     }
 
