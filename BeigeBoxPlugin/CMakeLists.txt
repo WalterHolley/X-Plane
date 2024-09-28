@@ -50,7 +50,7 @@ set(PRIVATE_SOURCE
         "src/DataProcessor.cpp"
         "src/Logger.cpp"
         "src/Recorder.cpp"
-        "src/TaskWorker.cpp")
+        "src/TaskWorker.cpp" src/MQClient.cpp src/include/MQClient.h)
 
 add_library(${PROJECT_NAME} SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE})
 
