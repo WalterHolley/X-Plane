@@ -2,19 +2,19 @@
 // Created by Zero on 7/7/2024.
 //
 
-#include "include/XPlaneListener.h"
-#include <boost/asio.hpp>
+#define MQ_NAME "BBQUEUE"
+#include<boost/interprocess/ipc/message_queue.hpp>
+#include<string>
+
+using namespace boost::interprocess;
+using namespace std;
+
 int main(int argc, char* argv[])
 {
+    message_queue mq(open_only, MQ_NAME);
+    message_queue::size_type receivedSize;
+    string message;
+    unsigned int priority;
+    mq.receive(&message, size(message), receivedSize, priority);
 
-    //read args
-
-    //init server
-
-    //start listener
-    try
-    {
-        boost::asio::io_service ioService;
-        XPlaneListener listener()
-    }
 }

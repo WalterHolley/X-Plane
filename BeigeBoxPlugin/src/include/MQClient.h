@@ -4,21 +4,23 @@
 #define MQCLIENT_H
 
 #include<string>
+#include <boost/interprocess/ipc/message_queue.hpp>
+#include "Logger.h"
 
-#ifdef IBM
-#include "windows.h"
-#include "mq.h"
-#include "tchar.h"
-#endif
-
+using namespace  boost::interprocess;
 
 class MQClient {
 
 public:
-    long init();
+    MQClient(Logger* log);
+    bool init();
     bool send(std::string message);
     void receive();
     void close();
+private:
+    Logger* _log;
+    bool mqInited;
+
 
 
 

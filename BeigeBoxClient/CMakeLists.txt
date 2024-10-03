@@ -18,7 +18,7 @@ if (MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-add_executable(${PROJECT_NAME} src/main.cpp src/XPlaneListener.cpp src/include/XPlaneListener.h src/include/XPlaneConnection.h src/XPlaneConnection.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp)
 
 if(WIN32)
     message("Building for windows")
@@ -32,7 +32,7 @@ endif (WIN32)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
         PREFIX ""
-        OUTPUT_NAME "../server")
+        OUTPUT_NAME "../bbclient")
 
 
 if(WIN32)

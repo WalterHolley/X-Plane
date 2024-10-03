@@ -4,64 +4,53 @@
 
 #include "include/MQClient.h"
 
+
 #define BUFFER_LENGTH 256
+#define QUEUE_NAME "BBQUEUE"
 
-#ifdef IBM
 
-HRESULT createWinMQ(LPWSTR pathName, PSECURITY_DESCRIPTOR psecurityDescriptor, LPWSTR outputFormatName, DWORD *outputFormatNameLength)
+MQClient::MQClient(Logger *log)
 {
-    const int NUM_PROPERTIES = 2;
-
-    //queue property structure
-    MQQUEUEPROPS queueProperties;
-    MQPROPVARIANT queuePropertyVariants[NUM_PROPERTIES];
-    QUEUEPROPID queuepropid[NUM_PROPERTIES];
-    HRESULT queueStatus[NUM_PROPERTIES];
-    HRESULT hresult = MQ_OK;
-
-    //validation
-    if(pathName == NULL || outputFormatName == NULL || outputFormatNameLength == NULL)
-    {
-        hresult = MQ_ERROR_INVALID_PARAMETER;
-    }
-    else
-    {
-        //set queue properties
-        DWORD propId = 0;
-        queuepropid[propId] = PROPID_Q_PATHNAME;
-        queuePropertyVariants[propId].vt = VT_LPWSTR;
-        queuePropertyVariants[propId].pwszVal = pathName;
-        propId++;
-
-        WCHAR label[MQ_MAX_MSG_LABEL_LEN] = L"BeigeBox Queue";
-        queuepropid[propId] = PROPID_Q_LABEL;
-        queuePropertyVariants[propId].vt = VT_LPWSTR;
-        queuePropertyVariants[propId].pwszVal = label;
-
-        //init queue property structure
-        queueProperties.cProp = propId;
-        queueProperties.aPropID = queuepropid;
-        queueProperties.aPropVar = queuePropertyVariants;
-        queueProperties.aStatus = queueStatus;
-
-        //create queue
-        WCHAR  formatNameBuffer[BUFFER_LENGTH];
-        DWORD formatBufferLength = BUFFER_LENGTH;
-        hresult = MQCreateQueue(psecurityDescriptor, &queueProperties, formatNameBuffer, &formatBufferLength);
-
-        if(hresult == MQ_OK || hresult == MQ_INFORMATION_PROPERTY)
-        {
-            if(*outputFormatNameLength >= formatBufferLength)
-            {
-                wcsncpy_s(outputFormatName, *outputFormatNameLength - 1, formatNameBuffer,_TRUNCATE);
-                outputFormatName[*outputFormatNameLength - 1] = L'\0';
-                *outputFormatNameLength = formatBufferLength;
-            }
-        }
-
-
-    }
-
-    return hresult;
+    _log = log;
+    mqInited = false;
 }
-#endif
+
+
+bool MQClient::init()
+{
+    if(!mqInited)
+    {
+        BOOST_TRY{
+                message_queue::remove(QUEUE_NAME);
+
+                message_queue mq(create_only, QUEUE_NAME, 100, BUFFER_LENGTH);
+                mqInited = true;
+            }
+            BOOST_CATCH(interprocess_exception &ex)
+            {
+                _log->error("MQCLIENT: Could not initialize MQ client: " + std::string(ex.what()));
+            }BOOST_CATCH_END
+    }
+
+    return mqInited;
+}
+
+bool MQClient::send(std::string message)
+{
+    bool result = false;
+
+    message_queue mq(open_only, QUEUE_NAME);
+    mq.send(&message, size(message), 0);
+    result = true;
+    _log->debug("MQCLIENT: Message sent: " + message);
+
+    return result;
+}
+
+void MQClient::close()
+{
+    message_queue::remove(QUEUE_NAME);
+    mqInited = false;
+    _log->debug("MQCLIENT: MQ closed");
+}
+

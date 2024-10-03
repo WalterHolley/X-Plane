@@ -15,12 +15,14 @@
 #include "include/DataUtil.h"
 #include "include/Recorder.h"
 #include "include/Logger.h"
+#include "include/MQClient.h"
 
 
 
 Logger* _log;
 DataUtil* _dataUtil;
 Recorder* _recorder;
+MQClient* _mq;
 XPLMMenuID xplmMenuIdentifier;
 int pluginSubMenuId;
 const char* BASE_MENU_NAME = "BeigeBox";
@@ -42,6 +44,7 @@ void cleanup()
     free(_log);
     free(_dataUtil);
     free(_recorder);
+    free(_mq);
 }
 
 void start()
@@ -72,6 +75,7 @@ float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop, int count
     {
         _dataUtil->updateScenario(flightData);
         _recorder->write(flightData);
+        _mq->send("This is a test message");
         _log->debug("BeigeBox: Recording completed");
     }
     else
@@ -87,6 +91,7 @@ float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop, int count
 PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
 {
     _log = new Logger();
+    _mq = new MQClient(_log);
     _dataUtil = new DataUtil(_log);
     _recorder = new Recorder(TEST_DB, _log);
     int result = 0;
@@ -119,6 +124,11 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
     XPLMEnableMenuItem(xplmMenuIdentifier, 1, 0);
 
     XPLMRegisterFlightLoopCallback(pollData, 1.0, NULL);
+
+#ifdef IBM
+    _mq->init();
+
+#endif
 
 
     return result;
