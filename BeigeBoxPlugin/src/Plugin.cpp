@@ -8,8 +8,13 @@
 #define XPLM300
 #define XPLM400
 
+#ifdef IBM
+#include <windows.h>
+#endif
+
 #include<XPLM/XPLMProcessing.h>
 #include<XPLM/XPLMMenus.h>
+#include<thread>
 #include<fstream>
 #include<sstream>
 #include "include/DataUtil.h"
@@ -34,23 +39,48 @@ bool record = false;
 dataFrame flightData;
 
 
-
 static void menuCallback(void* inMenuRef, void* inItemRef);
 static float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop, int count, void* refCon);
 
 void cleanup()
 {
     XPLMUnregisterFlightLoopCallback(pollData, NULL);
+    if(_mq)
+    {
+        _mq->close();
+    }
+
     free(_log);
     free(_dataUtil);
     free(_recorder);
     free(_mq);
 }
 
+void startClient()
+{
+#ifdef IBM
+    //ShellExecute(NULL, "open", "F:\\X-Plane 12\\Resources\\plugins\\BeigeBox\\win_x64\\bbclient.exe", NULL, NULL, SW_SHOWDEFAULT);
+    STARTUPINFO info ={sizeof(info)};
+    PROCESS_INFORMATION processInformation;
+    if(CreateProcess(NULL,"F:\\X-Plane 12\\Resources\\plugins\\BeigeBox\\win_x64\\bbclient.exe", NULL, NULL, TRUE,0, NULL, NULL, &info, &processInformation))
+    {
+        WaitForSingleObject(processInformation.hProcess, INFINITE);
+        CloseHandle(processInformation.hProcess);
+        CloseHandle(processInformation.hThread);
+    }
+#endif
+}
+
 void start()
 {
-
+    bbmsg msg;
+    msg.msgType = 1.0;
+    strcat(msg.message, "Starting the plugin.  Hello!");
     _log->debug("Start selected from menu");
+    _mq->init();
+    _mq->send(msg);
+    std::thread t(startClient);
+    t.detach();
     XPLMEnableMenuItem(xplmMenuIdentifier,1, 0);
     XPLMEnableMenuItem(xplmMenuIdentifier, 2, 1);
     record = true;
@@ -75,12 +105,7 @@ float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop, int count
     {
         _dataUtil->updateScenario(flightData);
         _recorder->write(flightData);
-        _mq->send("This is a test message");
         _log->debug("BeigeBox: Recording completed");
-    }
-    else
-    {
-        _log->debug("BeigeBox: Recording Off");
     }
 
     return 1.0;
@@ -124,11 +149,6 @@ PLUGIN_API int XPluginStart(char * name, char * sig, char * desc)
     XPLMEnableMenuItem(xplmMenuIdentifier, 1, 0);
 
     XPLMRegisterFlightLoopCallback(pollData, 1.0, NULL);
-
-#ifdef IBM
-    _mq->init();
-
-#endif
 
 
     return result;
@@ -189,7 +209,7 @@ void menuCallback(void* menuRef, void* itemRef)
 
 //Windows DLL boilerplate
 #ifdef IBM
-#include <windows.h>
+
 
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved)

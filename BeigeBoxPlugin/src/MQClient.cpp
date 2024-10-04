@@ -23,8 +23,9 @@ bool MQClient::init()
         BOOST_TRY{
                 message_queue::remove(QUEUE_NAME);
 
-                message_queue mq(create_only, QUEUE_NAME, 100, BUFFER_LENGTH);
+                message_queue mq(create_only, QUEUE_NAME, 100, sizeof(bbmsg));
                 mqInited = true;
+                _log->info("MQCLIENT: Message Queue Inited: " + std::string(QUEUE_NAME));
             }
             BOOST_CATCH(interprocess_exception &ex)
             {
@@ -35,14 +36,18 @@ bool MQClient::init()
     return mqInited;
 }
 
-bool MQClient::send(std::string message)
+bool MQClient::send(bbmsg &mqMessage)
 {
     bool result = false;
+    if(mqInited)
+    {
+        message_queue mq(open_only, QUEUE_NAME);
+        mq.send(&mqMessage, sizeof(mqMessage), 0);
+        result = true;
+        std::string msg(mqMessage.message);
+        _log->debug("MQCLIENT: Message sent: " + msg);
+    }
 
-    message_queue mq(open_only, QUEUE_NAME);
-    mq.send(&message, size(message), 0);
-    result = true;
-    _log->debug("MQCLIENT: Message sent: " + message);
 
     return result;
 }

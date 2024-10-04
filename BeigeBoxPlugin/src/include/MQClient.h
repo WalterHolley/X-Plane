@@ -8,13 +8,18 @@
 #include "Logger.h"
 
 using namespace  boost::interprocess;
+struct bbmsg
+{
+    long msgType;
+    char message[256];
+};
 
 class MQClient {
 
 public:
     MQClient(Logger* log);
     bool init();
-    bool send(std::string message);
+    bool send(bbmsg &message);
     void receive();
     void close();
 private:
