@@ -5,8 +5,7 @@ set(Boost_USE_MULTITHREADED FALSE)
 set(Boost_DEBUG ON)
 set(XPLANE_INCLUDE_DIR "../SDK/xplane")
 get_filename_component(PROJECT_ROOT .. ABSOLUTE)
-project(BBPlugin)
-
+project("BBPlugin")
 find_package(Boost 1.82.0 COMPONENTS thread)
 
 
@@ -35,22 +34,21 @@ set(PUBLIC_SOURCE
         )
 
 set(PRIVATE_SOURCE
-        "${PROJECT_ROOT}/SDK/cwic/include/c_headers.h"
         "${PROJECT_ROOT}/SDK/sqlite/sqlite3.h"
         "src/include/TaskWorker.h"
         "src/include/DataUtil.h"
         "src/include/DataProcessor.h"
-        "src/include/UDPClient.h"
         "src/include/Logger.h"
         "src/include/BBTypes.h"
         "src/include/Recorder.h"
         "${PROJECT_ROOT}/SDK/sqlite/sqlite3.c"
-        "src/UDPClient.cpp"
         "src/DataUtil.cpp"
         "src/DataProcessor.cpp"
         "src/Logger.cpp"
         "src/Recorder.cpp"
-        "src/TaskWorker.cpp" src/MQClient.cpp src/include/MQClient.h)
+        "src/TaskWorker.cpp" 
+        "src/MQClient.cpp" 
+        "src/include/MQClient.h")
 
 add_library(${PROJECT_NAME} SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE})
 
@@ -78,8 +76,7 @@ else ()
     add_definitions(-DLIN=1)
     message("Creating build for Linux")
     message(..)
-    target_link_libraries( ${PROJECT_NAME} PRIVATE "${PROJECT_ROOT}/SDK/Libraries/libcwic_lib.so"
-            -shared -rdynamic -nodefaultlibs -undefined_warning "${PROJECT_SOURCE_DIR}/SDK/Libraries/libXPLM_64.so")
+  target_link_libraries( ${PROJECT_NAME} PRIVATE -shared -rdynamic -nodefaultlibs -undefined_warning "${CMAKE_SOURCE_DIR}/SDK/Libraries/XPLM_64.so")
 endif (WIN32)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -89,7 +86,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 
 if(WIN32)
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${PROJECT_ROOT}/BeigeBox/win_x64)
+  install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_SOURCE_DIR}/BeigeBox/win_x64)
 else()
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION "${PROJECT_SOURCE_DIR}/BeigeBox/lin_x64/" )
+  install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/BeigeBox/lin_x64)
 endif (WIN32)

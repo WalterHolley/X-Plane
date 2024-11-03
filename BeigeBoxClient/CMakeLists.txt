@@ -12,7 +12,7 @@ if(NOT Boost_FOUND)
     message("Could not find boost at: ${BOOST_INCLUDE_DIR}")
 endif ()
 
-project(BBServer)
+project("BBClient")
 
 if (MSVC)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -36,7 +36,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 
 if(WIN32)
-    install(TARGETS ${PROJECT_NAME} DESTINATION ${PROJECT_ROOT}/BeigeBox/win_x64)
+  install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_SOURCE_DIR}/BeigeBox/win_x64)
 else()
-    install(TARGETS ${PROJECT_NAME} DESTINATION "${PROJECT_SOURCE_DIR}/BeigeBox/lin_x64/" )
+  install(TARGETS ${PROJECT_NAME} DESTINATION "${CMAKE_SOURCE_DIR}/BeigeBox/lin_x64/" )
 endif (WIN32)
