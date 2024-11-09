@@ -9,6 +9,7 @@ project("BBPlugin")
 find_package(Boost 1.82.0 COMPONENTS thread)
 
 
+
 if(Boost_FOUND)
     message("Boost Directory: ${BOOST_ROOT}")
     include_directories(${Boost_INCLUDE_DIR})
@@ -25,6 +26,7 @@ include_directories(${XPLANE_INCLUDE_DIR})
 include_directories(src/include)
 include_directories(../SDK/cwic/include)
 include_directories(../SDK/sqlite)
+
 
 file(GLOB HEADERS
         src/include/*.hpp)
@@ -49,6 +51,7 @@ set(PRIVATE_SOURCE
         "src/TaskWorker.cpp" 
         "src/MQClient.cpp" 
         "src/include/MQClient.h")
+
 
 add_library(${PROJECT_NAME} SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE})
 
@@ -76,10 +79,13 @@ else ()
     add_definitions(-DLIN=1)
     message("Creating build for Linux")
     message(..)
+
   target_link_libraries( ${PROJECT_NAME} PRIVATE -shared -rdynamic -nodefaultlibs -undefined_warning "${CMAKE_SOURCE_DIR}/SDK/Libraries/XPLM_64.so")
+
 endif (WIN32)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES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
+
         PREFIX ""
         OUTPUT_NAME "BeigeBox"
         SUFFIX ".xpl")
@@ -89,4 +95,5 @@ if(WIN32)
   install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${CMAKE_SOURCE_DIR}/BeigeBox/win_x64)
 else()
   install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/BeigeBox/lin_x64)
+
 endif (WIN32)

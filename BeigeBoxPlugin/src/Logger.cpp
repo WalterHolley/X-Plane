@@ -57,7 +57,6 @@ void writeToLog(const char* &level, string &message)
         logFile.flush();
     }
 
-
 }
 
 void Logger::debug(string message)

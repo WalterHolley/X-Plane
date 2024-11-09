@@ -1,6 +1,5 @@
 #define MAX_BUFFER 20480
 
-
 #include "include/DataProcessor.h"
 #include <thread>
 #include <fstream>
@@ -137,5 +136,6 @@ DataProcessor::~DataProcessor()
     free(_dataUtil);
     free(_taskWorker);
 }
+
 
 

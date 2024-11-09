@@ -1,7 +1,6 @@
 //
 // Created by Zero on 6/25/2023.
 //
-
 #define XPLM200
 #define XPLM210
 #define XPLM300
@@ -194,6 +193,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
     break;
   }
   return TRUE;
+
 }
 
 #endif
