@@ -53,9 +53,6 @@ void cleanup() {
 
 void startClient() {
 #ifdef IBM
-  // ShellExecute(NULL, "open", "F:\\X-Plane
-  // 12\\Resources\\plugins\\BeigeBox\\win_x64\\bbclient.exe", NULL, NULL,
-  // SW_SHOWDEFAULT);
   STARTUPINFO info = {sizeof(info)};
   PROCESS_INFORMATION processInformation;
   if (CreateProcess(

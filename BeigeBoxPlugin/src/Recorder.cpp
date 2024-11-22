@@ -6,7 +6,6 @@
 #include <chrono>
 #include <cstdint>
 #include <fstream>
-#include <iostream>
 #include <sqlite3.h>
 
 using namespace std;

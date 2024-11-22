@@ -54,6 +54,7 @@ dkms.conf
 #Project specific output
 *.xpl
 *.cmake
+*.json
 /SDK/
 /boost/
 /boost/
@@ -72,3 +73,6 @@ dkms.conf
 /BeigeBoxPlugin/cmake-build-debug/
 /BeigeBoxPlugin/cmake-build-release/
 /SDK/
+/build/
+bbclient
+.cache/

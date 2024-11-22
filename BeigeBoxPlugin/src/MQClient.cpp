@@ -3,59 +3,76 @@
 //
 
 #include "include/MQClient.h"
-
-
+#include <vector>
 #define BUFFER_LENGTH 256
-#define QUEUE_NAME "BBQUEUE"
+#define LISTENER_QUEUE_NAME "cwiq_mq_post"
+#define REPLY_QUEUE_NAME "cwiq_mq_reply"
 
-
-MQClient::MQClient(Logger *log)
-{
-    _log = log;
-    mqInited = false;
+MQClient::MQClient(Logger *log) {
+  _log = log;
+  mqInited = false;
 }
 
+bool MQClient::init() {
+  if (!mqInited) {
+    BOOST_TRY {
+      message_queue::remove(LISTENER_QUEUE_NAME);
+      message_queue::remove(REPLY_QUEUE_NAME);
 
-bool MQClient::init()
-{
-    if(!mqInited)
-    {
-        BOOST_TRY{
-                message_queue::remove(QUEUE_NAME);
-
-                message_queue mq(create_only, QUEUE_NAME, 100, sizeof(bbmsg));
-                mqInited = true;
-                _log->info("MQCLIENT: Message Queue Inited: " + std::string(QUEUE_NAME));
-            }
-            BOOST_CATCH(interprocess_exception &ex)
-            {
-                _log->error("MQCLIENT: Could not initialize MQ client: " + std::string(ex.what()));
-            }BOOST_CATCH_END
+      message_queue listen_mq(create_only, LISTENER_QUEUE_NAME, 100,
+                              sizeof(bbmsg));
+      _log->info("MQCLIENT: Message queue inited: " +
+                 std::string(LISTENER_QUEUE_NAME));
+      message_queue reply_mq(create_only, REPLY_QUEUE_NAME, 100, sizeof(bbmsg));
+      _log->info("MQCLIENT: MEssage queue inited: " +
+                 std::string(REPLY_QUEUE_NAME));
+      mqInited = true;
     }
-
-    return mqInited;
-}
-
-bool MQClient::send(bbmsg &mqMessage)
-{
-    bool result = false;
-    if(mqInited)
-    {
-        message_queue mq(open_only, QUEUE_NAME);
-        mq.send(&mqMessage, sizeof(mqMessage), 0);
-        result = true;
-        std::string msg(mqMessage.message);
-        _log->debug("MQCLIENT: Message sent: " + msg);
+    BOOST_CATCH(interprocess_exception & ex) {
+      _log->error("MQCLIENT: Could not initialize MQ client: " +
+                  std::string(ex.what()));
     }
+    BOOST_CATCH_END
+  }
 
-
-    return result;
+  return mqInited;
 }
 
-void MQClient::close()
-{
-    message_queue::remove(QUEUE_NAME);
-    mqInited = false;
-    _log->debug("MQCLIENT: MQ closed");
+bool MQClient::send(bbmsg &mqMessage) {
+  bool result = false;
+  if (mqInited) {
+    message_queue mq(open_only, REPLY_QUEUE_NAME);
+    mq.send(&mqMessage, sizeof(mqMessage), 0);
+    result = true;
+    std::string msg(mqMessage.message);
+    _log->debug("MQCLIENT: Message sent: " + msg);
+  }
+
+  return result;
 }
 
+std::vector<bbmsg> MQClient::receive() {
+  message_queue mq(open_only, LISTENER_QUEUE_NAME);
+  message_queue::size_type msgSize;
+  std::vector<bbmsg> processRequests = {};
+  unsigned int priority;
+  bool gotMsg = false;
+
+  do {
+    bbmsg mqMessage;
+    gotMsg = mq.try_receive(&mqMessage, sizeof(bbmsg), msgSize, priority);
+
+    if (gotMsg) {
+      processRequests.push_back(mqMessage);
+    }
+  } while (gotMsg);
+
+  return processRequests;
+}
+
+void MQClient::close() {
+  message_queue::remove(LISTENER_QUEUE_NAME);
+  message_queue::remove(REPLY_QUEUE_NAME);
+  mqInited = false;
+  _log->debug("MQCLIENT: MQ closed");
+}
