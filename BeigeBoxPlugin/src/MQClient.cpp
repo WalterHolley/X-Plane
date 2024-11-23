@@ -1,6 +1,4 @@
-//
-// Created by Zero on 9/27/2024.
-//
+// Copyright (c) 2024 Walter Holley III. All Rights Reserved.
 
 #include "include/MQClient.h"
 #include <vector>

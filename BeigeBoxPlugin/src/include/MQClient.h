@@ -9,8 +9,27 @@
 
 using namespace boost::interprocess;
 struct bbmsg {
-  long msgType;
+  unsigned int msgType;
   char message[256];
+};
+
+enum bbMsgType {
+  ERROR = 0,
+  BUTTON1 = 1,
+  BUTTON2 = 2,
+  BUTTON3 = 3,
+  INIT = 4,
+  RUN = 5,
+  END = 6,
+  FAIL = 7,
+  RESET = 8,
+  PING = 9,
+  GETSIMSOCKET = 10,
+  GETSERVERSOCKET = 11,
+  MESSAGE = 12,
+  BUFFERSIZEERROR = 13,
+  BUFFERSTRINGERROR = 14,
+  PLANNINGFAIL = 15
 };
 
 class MQClient {

@@ -1,6 +1,4 @@
-//
-// Created by Zero on 6/25/2023.
-//
+// Copyright (c) 2024 Walter Holley III. All Rights Reserved.
 
 #define XPLM200
 #define XPLM210
@@ -17,8 +15,6 @@
 #include "include/Recorder.h"
 #include <XPLM/XPLMMenus.h>
 #include <XPLM/XPLMProcessing.h>
-#include <fstream>
-#include <sstream>
 #include <thread>
 
 Logger *_log;
@@ -31,7 +27,6 @@ const char *BASE_MENU_NAME = "BeigeBox";
 const char *START_RECORDING = "Start Recording";
 const char *STOP_RECORDING = "Stop Recording";
 string TEST_DB = "NORTHWIND_AI";
-ifstream json("datarefs.json");
 bool record = false;
 dataFrame flightData;
 
@@ -68,8 +63,8 @@ void startClient() {
 
 void start() {
   bbmsg msg;
-  msg.msgType = 1.0;
-  strcat(msg.message, "Starting the plugin.  Hello!");
+  msg.msgType = INIT;
+  strcat(msg.message, "Plugin started.  Hello!");
   _log->debug("Start selected from menu");
   _mq->init();
   _mq->send(msg);
@@ -92,8 +87,37 @@ void stop() {
 float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
                int count, void *refCon) {
   if (record) {
-    _dataUtil->updateScenario(flightData);
-    _recorder->write(flightData);
+    //_dataUtil->updateScenario(flightData);
+    //_recorder->write(flightData);
+    vector<bbmsg> messages = _mq->receive();
+    for (vector<bbmsg>::iterator iter = messages.begin();
+         iter != messages.end(); ++iter) {
+      switch (iter->msgType) {
+      case ERROR:
+      case BUTTON1:
+      case BUTTON2:
+      case BUTTON3:
+      case INIT:
+        break;
+      case RUN:
+        break;
+      case END:
+        break;
+      case FAIL:
+        break;
+      case RESET:
+      case PING:
+      case GETSIMSOCKET:
+      case GETSERVERSOCKET:
+      case MESSAGE:
+      case BUFFERSIZEERROR:
+      case BUFFERSTRINGERROR:
+      case PLANNINGFAIL:
+      default:
+        break;
+        // log and ignore
+      };
+    }
     _log->debug("BeigeBox: Recording completed");
   }
 
@@ -104,22 +128,9 @@ float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
 PLUGIN_API int XPluginStart(char *name, char *sig, char *desc) {
   _log = new Logger();
   _mq = new MQClient(_log);
-  _dataUtil = new DataUtil(_log);
-  _recorder = new Recorder(TEST_DB, _log);
+  //_dataUtil = new DataUtil(_log);
+  //_recorder = new Recorder(TEST_DB, _log);
   int result = 0;
-
-  if (json.good()) {
-    string jsn;
-    stringstream content;
-
-    while (getline(json, jsn)) {
-      content << jsn;
-    }
-    jsn = content.str();
-    flightData = _dataUtil->getScenarioData(jsn);
-    _recorder->init(flightData);
-    result = 1;
-  }
 
   // basic plugin information
   strcpy(name, "BeigeBox");
@@ -145,7 +156,7 @@ PLUGIN_API void XPluginStop(void) { cleanup(); }
 PLUGIN_API int XPluginEnable(void) {
   int result = 0;
 
-  if (_log && _recorder && _dataUtil) {
+  if (_log && _recorder && _mq) {
     _log->info("Beigebox: Plugin enabled");
     result = 1;
   }

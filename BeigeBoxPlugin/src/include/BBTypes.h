@@ -1,6 +1,4 @@
-//
-// Created by Zero on 8/9/2024.
-//
+// Copyright (c) 2024 Walter Holley III. All Rights Reserved.
 
 #ifndef BBTYPES_H
 #define BBTYPES_H
