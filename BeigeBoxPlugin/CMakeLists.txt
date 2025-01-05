@@ -76,7 +76,9 @@ else ()
     add_definitions(-DLIN=1)
     message("Creating build for Linux")
     message(..)
-  target_link_libraries( ${PROJECT_NAME} PRIVATE -shared -rdynamic -nodefaultlibs -undefined_warning "${CMAKE_SOURCE_DIR}/SDK/Libraries/XPLM_64.so")
+  target_link_libraries( ${PROJECT_NAME} PRIVATE 
+  -shared -rdynamic -nodefaultlibs -undefined_warning "${CMAKE_SOURCE_DIR}/SDK/Libraries/XPLM_64.so" 
+  -shared -rdynamic -nodefaultlibs -undefined_warning "${CMAKE_SOURCE_DIR}/SDK/Libraries/XPWidgets_64.so")
 endif (WIN32)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

@@ -3,8 +3,10 @@
 #define XPLM200
 #define XPLM210
 #define XPLM300
-#define XPLM400
-
+#define XPLM301
+#define XPLM302
+#define XPLM303
+#define MAX_MSGS 150
 #ifdef IBM
 #include <windows.h>
 #endif
@@ -13,8 +15,11 @@
 #include "include/Logger.h"
 #include "include/MQClient.h"
 #include "include/Recorder.h"
+#include <XPLM/XPLMDisplay.h>
+#include <XPLM/XPLMGraphics.h>
 #include <XPLM/XPLMMenus.h>
 #include <XPLM/XPLMProcessing.h>
+#include <XPLM/XPLMUtilities.h>
 #include <thread>
 
 Logger *_log;
@@ -29,13 +34,35 @@ const char *STOP_RECORDING = "Stop Recording";
 string TEST_DB = "NORTHWIND_AI";
 bool record = false;
 dataFrame flightData;
+vector<bbmsg> consolemsgs = {};
 
 static void menuCallback(void *inMenuRef, void *inItemRef);
 static float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
                       int count, void *refCon);
+static void defineWindow();
+static XPLMWindowID messageWindow;
+
+// plugin window methods
+void draw(XPLMWindowID in_windowId, void *refCon);
+XPLMCursorStatus dumbCursorHandler(XPLMWindowID in_window_id, int x, int y,
+                                   void *in_refcon) {
+  return xplm_CursorDefault;
+}
+void dumbKeyHandler(XPLMWindowID in_windowId, char key, XPLMKeyFlags keyFlag,
+                    char virtual_key, void *in_refcon, int losing_focus) {};
+int dumbMWheelHandler(XPLMWindowID in_window_id, int x, int y, int wheel,
+                      int clicks, void *in_refcon) {
+  return 0;
+}
+int dumbMouseHandler(XPLMWindowID in_window_id, int x, int y,
+                     XPLMMouseStatus in_status, void *in_refcon) {
+  return 0;
+}
+XPLMCreateWindow_t pluginWindow;
 
 void cleanup() {
   XPLMUnregisterFlightLoopCallback(pollData, NULL);
+  XPLMDestroyWindow(messageWindow);
   if (_mq) {
     _mq->close();
   }
@@ -47,7 +74,12 @@ void cleanup() {
 }
 
 void startClient() {
+  char *xplPath;
+  XPLMGetSystemPath(xplPath);
 #ifdef IBM
+  // ShellExecute(NULL, "open", "F:\\X-Plane
+  // 12\\Resources\\plugins\\BeigeBox\\win_x64\\bbclient.exe", NULL, NULL,
+  // SW_SHOWDEFAULT);
   STARTUPINFO info = {sizeof(info)};
   PROCESS_INFORMATION processInformation;
   if (CreateProcess(
@@ -59,8 +91,15 @@ void startClient() {
     CloseHandle(processInformation.hThread);
   }
 #endif
+#ifdef LIN
+  strcat(xplPath, "/Resources/plugins/Beigebox/lin_x64/bbclient");
+  char *args[] = {xplPath};
+  pid_t child = fork();
+  if (child >= 0) {
+    execvp(args[0], args);
+  }
+#endif
 }
-
 void start() {
   bbmsg msg;
   msg.msgType = INIT;
@@ -68,6 +107,7 @@ void start() {
   _log->debug("Start selected from menu");
   _mq->init();
   _mq->send(msg);
+  // start and detach client process
   std::thread t(startClient);
   t.detach();
   XPLMEnableMenuItem(xplmMenuIdentifier, 1, 0);
@@ -87,38 +127,14 @@ void stop() {
 float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
                int count, void *refCon) {
   if (record) {
-    //_dataUtil->updateScenario(flightData);
-    //_recorder->write(flightData);
     vector<bbmsg> messages = _mq->receive();
-    for (vector<bbmsg>::iterator iter = messages.begin();
-         iter != messages.end(); ++iter) {
-      switch (iter->msgType) {
-      case ERROR:
-      case BUTTON1:
-      case BUTTON2:
-      case BUTTON3:
-      case INIT:
-        break;
-      case RUN:
-        break;
-      case END:
-        break;
-      case FAIL:
-        break;
-      case RESET:
-      case PING:
-      case GETSIMSOCKET:
-      case GETSERVERSOCKET:
-      case MESSAGE:
-      case BUFFERSIZEERROR:
-      case BUFFERSTRINGERROR:
-      case PLANNINGFAIL:
-      default:
-        break;
-        // log and ignore
-      };
+    consolemsgs.insert(consolemsgs.end(), messages.begin(), messages.end());
+
+    if (consolemsgs.size() > MAX_MSGS) {
+      int delta = consolemsgs.size() - MAX_MSGS;
+      auto end = consolemsgs.begin() + delta - 1;
+      consolemsgs.erase(consolemsgs.begin(), end);
     }
-    _log->debug("BeigeBox: Recording completed");
   }
 
   return 1.0;
@@ -128,14 +144,40 @@ float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
 PLUGIN_API int XPluginStart(char *name, char *sig, char *desc) {
   _log = new Logger();
   _mq = new MQClient(_log);
-  //_dataUtil = new DataUtil(_log);
-  //_recorder = new Recorder(TEST_DB, _log);
   int result = 0;
+  int desktopScreenBounds[4];
 
+  // Screen bounds
+  XPLMGetScreenBoundsGlobal(&desktopScreenBounds[0], &desktopScreenBounds[2],
+                            &desktopScreenBounds[1], &desktopScreenBounds[3]);
   // basic plugin information
   strcpy(name, "BeigeBox");
   strcpy(sig, "com.avidata.recorder");
   strcpy(desc, "Sim Flight Event Recorder for varied data");
+
+  // message window defininition
+  pluginWindow.structSize = sizeof(pluginWindow);
+  pluginWindow.left = desktopScreenBounds[0] + 50;
+  pluginWindow.right = desktopScreenBounds[0] + 350;
+  pluginWindow.top = desktopScreenBounds[1] + 450;
+  pluginWindow.bottom = desktopScreenBounds[1] + 50;
+  pluginWindow.visible = 1;
+  pluginWindow.drawWindowFunc = draw;
+  pluginWindow.handleMouseClickFunc = dumbMouseHandler;
+  pluginWindow.handleRightClickFunc = NULL;
+  pluginWindow.handleMouseWheelFunc = dumbMWheelHandler;
+  pluginWindow.handleKeyFunc = dumbKeyHandler;
+  pluginWindow.handleCursorFunc = dumbCursorHandler;
+  pluginWindow.refcon = NULL;
+  pluginWindow.layer = xplm_WindowLayerFloatingWindows;
+  pluginWindow.handleRightClickFunc = dumbMouseHandler;
+  pluginWindow.decorateAsFloatingWindow = 1;
+
+  messageWindow = XPLMCreateWindowEx(&pluginWindow);
+  XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
+  XPLMSetWindowResizingLimits(messageWindow, 200, 200, 500, 500);
+  XPLMSetWindowGravity(messageWindow, 0, 1, 0, 1);
+  XPLMSetWindowTitle(messageWindow, "BeigeBox Message Viewer");
 
   // menu setup
   pluginSubMenuId =
@@ -186,6 +228,85 @@ void menuCallback(void *menuRef, void *itemRef) {
   default:
     _log->error("MENU: unknown menu item selected");
     break;
+  }
+}
+
+void draw(XPLMWindowID in_windowId, void *in_refcon) {
+  int charHeight;
+  int left, right, top, bottom;
+  XPLMSetGraphicsState(0, 0, 0, 0, 1, 1, 0);
+  char textBuffer[288];
+  // font and window settings
+  XPLMGetFontDimensions(xplmFont_Proportional, NULL, &charHeight, NULL);
+  XPLMGetWindowGeometry(in_windowId, &left, &top, &right, &bottom);
+  std::string message_type_string[] = {"ERROR",
+                                       "BUTTON1",
+                                       "BUTTON2",
+                                       "BUTTON3",
+                                       "INIT",
+                                       "RUN",
+                                       "END",
+                                       "FAIL",
+                                       "RESET",
+                                       "PING",
+                                       "GETSIMSOCKET",
+                                       "GETSERVERSOCKET",
+                                       "MESSAGE",
+                                       "BUFFERSIZEERROR",
+                                       "BUFFERSTRINGERROR",
+                                       "PLANNINGFAIL"};
+
+  // colors
+  float clr_white[] = {1.0, 1.0, 1.0};
+  float clr_green[] = {0.08, 0.9, 0.05};
+  float clr_red[] = {0.9, 0.16, 0.05};
+
+  // draw messages
+  {
+    int y = bottom;
+
+    for (int iter = consolemsgs.size() - 1; iter >= 0; iter--) {
+      bbmsg msg = consolemsgs.at(iter);
+      sprintf(textBuffer, "[%s]: %s", message_type_string[msg.msgType].c_str(),
+              msg.message);
+      switch (msg.msgType) {
+      case ERROR:
+        XPLMDrawString(clr_red, left, y, textBuffer, NULL,
+                       xplmFont_Proportional);
+        break;
+      case BUTTON1:
+      case BUTTON2:
+      case BUTTON3:
+      case INIT:
+      case RUN:
+      case END:
+        XPLMDrawString(clr_green, left, y, textBuffer, NULL,
+                       xplmFont_Proportional);
+        break;
+      case FAIL:
+        XPLMDrawString(clr_red, left, y, textBuffer, NULL,
+                       xplmFont_Proportional);
+        break;
+      case RESET:
+      case PING:
+      case GETSIMSOCKET:
+      case GETSERVERSOCKET:
+      case MESSAGE:
+        XPLMDrawString(clr_white, left, y, textBuffer, NULL,
+                       xplmFont_Proportional);
+        break;
+      case BUFFERSIZEERROR:
+      case BUFFERSTRINGERROR:
+      case PLANNINGFAIL:
+        XPLMDrawString(clr_red, left, y, textBuffer, NULL,
+                       xplmFont_Proportional);
+      default:
+        break;
+        // log and ignore
+      };
+
+      y += 1.5 * charHeight;
+    }
   }
 }
 
