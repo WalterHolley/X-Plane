@@ -10,8 +10,6 @@ Logger* _logger;
 
 
 //***JSON PARSING**//
-
-
 /**
  * maps a datastruct from a json object provided from
  * the server
@@ -27,6 +25,7 @@ dataStruct map_datastruct(json::object jsonObj)
     structure.rounding = jsonObj.at(ROUNDING_KEY).get_int64();
     structure.units = jsonObj.at(UNITS_KEY).get_string().c_str();
     structure.unitsEnum = unitMappings[structure.units.c_str()];
+
 
     return structure;
 
@@ -55,11 +54,13 @@ json::value get_frame(string &message)
         else
         {
             _logger->info("DataUtil: message parsing completed successfully");
+
         }
     }
     catch(std::exception& ex)
     {
         _logger->error("DataUtil: There was a problem during json parsing: " + errorCode.what());
+
         return nullptr;
     }
 
@@ -170,6 +171,7 @@ vector<dataStruct> get_datastructures(json::value val)
     return datarefs;
 
 }
+
 
 dataFrame parse_frame(json::value &jsonValue)
 {

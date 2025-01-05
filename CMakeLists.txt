@@ -8,3 +8,4 @@ project("BeigeBox Suite")
 
 add_subdirectory(BeigeBoxPlugin)
 add_subdirectory(BeigeBoxClient)
+
