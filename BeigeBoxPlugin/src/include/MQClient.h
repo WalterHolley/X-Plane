@@ -5,6 +5,7 @@
 
 #include "Logger.h"
 #include <boost/interprocess/ipc/message_queue.hpp>
+#include <boost/interprocess/permissions.hpp>
 #include <vector>
 
 using namespace boost::interprocess;
@@ -37,13 +38,14 @@ class MQClient {
 public:
   MQClient(Logger *log);
   bool init();
-  bool send(bbmsg &message);
+  bool send(bbmsg message);
   std::vector<bbmsg> receive();
   void close();
 
 private:
   Logger *_log;
   bool mqInited;
+  permissions _perms;
 };
 
 #endif //_MQCLIENT_H

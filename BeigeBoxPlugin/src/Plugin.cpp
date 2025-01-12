@@ -20,13 +20,13 @@
 #include <XPLM/XPLMMenus.h>
 #include <XPLM/XPLMProcessing.h>
 #include <XPLM/XPLMUtilities.h>
-#include <thread>
 
 Logger *_log;
 DataUtil *_dataUtil;
 Recorder *_recorder;
 MQClient *_mq;
 XPLMMenuID xplmMenuIdentifier;
+XPLMCreateWindow_t pluginWindow;
 int pluginSubMenuId;
 const char *BASE_MENU_NAME = "BeigeBox";
 const char *START_RECORDING = "Start Recording";
@@ -58,7 +58,6 @@ int dumbMouseHandler(XPLMWindowID in_window_id, int x, int y,
                      XPLMMouseStatus in_status, void *in_refcon) {
   return 0;
 }
-XPLMCreateWindow_t pluginWindow;
 
 void cleanup() {
   XPLMUnregisterFlightLoopCallback(pollData, NULL);
@@ -68,8 +67,6 @@ void cleanup() {
   }
 
   free(_log);
-  free(_dataUtil);
-  free(_recorder);
   free(_mq);
 }
 
@@ -93,10 +90,13 @@ void startClient() {
 #endif
 #ifdef LIN
   strcat(xplPath, "/Resources/plugins/Beigebox/lin_x64/bbclient");
-  char *args[] = {xplPath};
-  pid_t child = fork();
-  if (child >= 0) {
-    execvp(args[0], args);
+  char *args[] = {xplPath, NULL};
+  _log->debug(xplPath);
+  if (fork() == 0) {
+    setsid();
+    if (fork() == 0) {
+      execvp(args[0], args);
+    }
   }
 #endif
 }
@@ -106,10 +106,15 @@ void start() {
   strcat(msg.message, "Plugin started.  Hello!");
   _log->debug("Start selected from menu");
   _mq->init();
+  // start client process
+  // startClient();
+  //_log->info("Client detached");
   _mq->send(msg);
-  // start and detach client process
-  std::thread t(startClient);
-  t.detach();
+  messageWindow = XPLMCreateWindowEx(&pluginWindow);
+  XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
+  XPLMSetWindowResizingLimits(messageWindow, 200, 200, 500, 500);
+  XPLMSetWindowGravity(messageWindow, 0, 1, 0, 1);
+  XPLMSetWindowTitle(messageWindow, "BeigeBox Message Viewer");
   XPLMEnableMenuItem(xplmMenuIdentifier, 1, 0);
   XPLMEnableMenuItem(xplmMenuIdentifier, 2, 1);
   record = true;
@@ -144,7 +149,6 @@ float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
 PLUGIN_API int XPluginStart(char *name, char *sig, char *desc) {
   _log = new Logger();
   _mq = new MQClient(_log);
-  int result = 0;
   int desktopScreenBounds[4];
 
   // Screen bounds
@@ -173,12 +177,6 @@ PLUGIN_API int XPluginStart(char *name, char *sig, char *desc) {
   pluginWindow.handleRightClickFunc = dumbMouseHandler;
   pluginWindow.decorateAsFloatingWindow = 1;
 
-  messageWindow = XPLMCreateWindowEx(&pluginWindow);
-  XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
-  XPLMSetWindowResizingLimits(messageWindow, 200, 200, 500, 500);
-  XPLMSetWindowGravity(messageWindow, 0, 1, 0, 1);
-  XPLMSetWindowTitle(messageWindow, "BeigeBox Message Viewer");
-
   // menu setup
   pluginSubMenuId =
       XPLMAppendMenuItem(XPLMFindPluginsMenu(), BASE_MENU_NAME, 0, 1);
@@ -186,11 +184,11 @@ PLUGIN_API int XPluginStart(char *name, char *sig, char *desc) {
                                       pluginSubMenuId, menuCallback, 0);
   XPLMAppendMenuItem(xplmMenuIdentifier, START_RECORDING, (void *)1, 1);
   XPLMAppendMenuItem(xplmMenuIdentifier, STOP_RECORDING, (void *)2, 1);
-  XPLMEnableMenuItem(xplmMenuIdentifier, 1, 0);
+  XPLMEnableMenuItem(xplmMenuIdentifier, 1, 1);
 
   XPLMRegisterFlightLoopCallback(pollData, 1.0, NULL);
 
-  return result;
+  return 1;
 }
 
 PLUGIN_API void XPluginStop(void) { cleanup(); }
@@ -198,7 +196,7 @@ PLUGIN_API void XPluginStop(void) { cleanup(); }
 PLUGIN_API int XPluginEnable(void) {
   int result = 0;
 
-  if (_log && _recorder && _mq) {
+  if (_log && _mq) {
     _log->info("Beigebox: Plugin enabled");
     result = 1;
   }

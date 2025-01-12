@@ -1,6 +1,9 @@
 // Copyright (c) 2024 Walter Holley III. All Rights Reserved.
 
 #include "include/MQClient.h"
+#include "boost/interprocess/creation_tags.hpp"
+#include "boost/interprocess/interprocess_fwd.hpp"
+#include "boost/interprocess/permissions.hpp"
 #include <vector>
 #define BUFFER_LENGTH 256
 #define LISTENER_QUEUE_NAME "cwiq_mq_post"
@@ -9,6 +12,7 @@
 MQClient::MQClient(Logger *log) {
   _log = log;
   mqInited = false;
+  _perms = permissions();
 }
 
 bool MQClient::init() {
@@ -17,13 +21,6 @@ bool MQClient::init() {
       message_queue::remove(LISTENER_QUEUE_NAME);
       message_queue::remove(REPLY_QUEUE_NAME);
 
-      message_queue listen_mq(create_only, LISTENER_QUEUE_NAME, 100,
-                              sizeof(bbmsg));
-      _log->info("MQCLIENT: Message queue inited: " +
-                 std::string(LISTENER_QUEUE_NAME));
-      message_queue reply_mq(create_only, REPLY_QUEUE_NAME, 100, sizeof(bbmsg));
-      _log->info("MQCLIENT: MEssage queue inited: " +
-                 std::string(REPLY_QUEUE_NAME));
       mqInited = true;
     }
     BOOST_CATCH(interprocess_exception & ex) {
@@ -36,34 +33,48 @@ bool MQClient::init() {
   return mqInited;
 }
 
-bool MQClient::send(bbmsg &mqMessage) {
+bool MQClient::send(bbmsg mqMessage) {
   bool result = false;
   if (mqInited) {
-    message_queue mq(open_only, REPLY_QUEUE_NAME);
-    mq.send(&mqMessage, sizeof(mqMessage), 0);
-    result = true;
-    std::string msg(mqMessage.message);
-    _log->debug("MQCLIENT: Message sent: " + msg);
+    try {
+      _perms.set_unrestricted();
+      message_queue mq(open_or_create, REPLY_QUEUE_NAME, 100,
+                       sizeof(struct bbmsg), _perms);
+      std::string msg(mqMessage.message);
+      _log->debug("MQCLIENT: Sending message: " + msg);
+      result = mq.try_send(&mqMessage, sizeof(struct bbmsg), 0);
+      if (result) {
+        _log->debug("MQCLIENT: Message sent");
+      }
+    } catch (interprocess_exception &e) {
+      _log->error(e.what());
+      message_queue::remove(LISTENER_QUEUE_NAME);
+      message_queue::remove(REPLY_QUEUE_NAME);
+    }
   }
 
   return result;
 }
 
 std::vector<bbmsg> MQClient::receive() {
-  message_queue mq(open_only, LISTENER_QUEUE_NAME);
+  _perms.set_unrestricted();
+  message_queue mq(open_or_create, LISTENER_QUEUE_NAME, 100,
+                   sizeof(struct bbmsg), _perms);
   message_queue::size_type msgSize;
   std::vector<bbmsg> processRequests = {};
   unsigned int priority;
   bool gotMsg = false;
-
+  int count = 0;
   do {
     bbmsg mqMessage;
-    gotMsg = mq.try_receive(&mqMessage, sizeof(bbmsg), msgSize, priority);
+    gotMsg =
+        mq.try_receive(&mqMessage, sizeof(struct bbmsg), msgSize, priority);
 
     if (gotMsg) {
       processRequests.push_back(mqMessage);
+      count++;
     }
-  } while (gotMsg);
+  } while (gotMsg && count < 100);
 
   return processRequests;
 }

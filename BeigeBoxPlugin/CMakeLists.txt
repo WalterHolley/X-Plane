@@ -48,12 +48,16 @@ set(PRIVATE_SOURCE
         "src/DataProcessor.cpp"
         "src/Logger.cpp"
         "src/Recorder.cpp"
-        "src/TaskWorker.cpp" 
-        "src/MQClient.cpp" 
+        "src/TaskWorker.cpp"
         "src/include/MQClient.h")
 
+if(WIN32)
+  set(MQ_SOURCE "src/MQClient.cpp")
+else()
+  set(MQ_SOURCE "src/MQClientLin.cpp")
 
-add_library(${PROJECT_NAME} SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE})
+
+add_library(${PROJECT_NAME} SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE} ${MQ_SOURCE})
 
 
 

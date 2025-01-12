@@ -6,10 +6,10 @@
 #define LISTENER_QUEUE_NAME "cwiq_mq_reply"
 #define REPLY_QUEUE_NAME "cwiq_mq_post"
 #define BUFFER_LENGTH 256
-#include <boost/interprocess/ipc/message_queue.hpp>
 #include <fstream>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 
-using namespace boost::interprocess;
 using namespace std;
 
 ofstream logFile;
@@ -21,13 +21,15 @@ struct bbmsg {
 
 int main(int argc, char *argv[]) {
   logFile.open("bbclient_log.txt", ios_base::app);
-  BOOST_TRY {
+  try {
+
     bbmsg message;
     bbmsg sendmessage;
-    unsigned int priority;
-    message_queue listen_mq(create_only, LISTENER_QUEUE_NAME, 100,
-                            sizeof(bbmsg));
-    message_queue reply_mq(create_only, REPLY_QUEUE_NAME, 100, sizeof(bbmsg));
+    unsigned int priority = 0;
+    message_queue listen_mq(open_or_create, LISTENER_QUEUE_NAME, 100,
+                            sizeof(bbmsg), perms);
+    message_queue reply_mq(open_or_create, REPLY_QUEUE_NAME, 100, sizeof(bbmsg),
+                           perms);
 
     message_queue::size_type receivedSize;
     for (int i = 0; i < 10; i++) {
@@ -37,10 +39,9 @@ int main(int argc, char *argv[]) {
       sendmessage.msgType = 12;
       strcat(sendmessage.message,
              "This is a test response from the underlying process");
-      reply_mq.send(&sendmessage, sizeof(bbmsg), 0);
+      reply_mq.send(&sendmessage, sizeof(bbmsg), priority);
     }
-  }
-  BOOST_CATCH(interprocess_exception & ex) {
+  } catch (Exception &ex) {
     logFile << "ERROR: " << ex.what() << endl;
   }
   BOOST_CATCH_END
