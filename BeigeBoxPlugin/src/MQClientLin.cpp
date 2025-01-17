@@ -2,11 +2,13 @@
 
 #include <fcntl.h>
 #include <string>
+#include <sys/types.h>
 #define LISTENER_QUEUE "cwiq_mq_post"
 #define REPLY_QUEUE "cwiq_mq_reply"
 
 #include "include/MQClient.h"
 #include <mqueue.h>
+#include <vector>
 
 mqd_t listenerQueue;
 mqd_t replyQueue;
@@ -52,4 +54,28 @@ bool MQClient::send(bbmsg message) {
     }
   }
   return sent;
+}
+std::vector<bbmsg> MQClient::receive() {
+  std::vector<bbmsg> messages = {};
+  ssize_t size;
+  int count = 0;
+  do {
+    bbmsg msg;
+    size = mq_receive(replyQueue, (char *)&msg, sizeof(bbmsg), 0);
+
+    if (size <= 0) {
+      break;
+    }
+    messages.push_back(msg);
+    count++;
+  } while (count < 100);
+
+  return messages;
+}
+
+void MQClient::close() {
+  mq_close(listenerQueue);
+  mq_close(replyQueue);
+  _log->info("MQCLIENT: queues closed");
+  mqInited = false;
 }

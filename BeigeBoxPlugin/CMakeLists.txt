@@ -55,6 +55,7 @@ if(WIN32)
   set(MQ_SOURCE "src/MQClient.cpp")
 else()
   set(MQ_SOURCE "src/MQClientLin.cpp")
+endif()
 
 
 add_library(${PROJECT_NAME} SHARED ${PUBLIC_SOURCE} ${PRIVATE_SOURCE} ${MQ_SOURCE})

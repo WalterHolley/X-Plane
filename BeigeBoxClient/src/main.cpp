@@ -3,16 +3,19 @@
 //
 
 #include <cstdio>
+#include <fcntl.h>
 #define LISTENER_QUEUE_NAME "cwiq_mq_reply"
 #define REPLY_QUEUE_NAME "cwiq_mq_post"
 #define BUFFER_LENGTH 256
 #include <fstream>
-#include <sys/ipc.h>
-#include <sys/msg.h>
+#include <mqueue.h>
+#include <string.h>
 
 using namespace std;
 
 ofstream logFile;
+mqd_t listenerQueue;
+mqd_t replyQueue;
 
 struct bbmsg {
   unsigned int msgType;
@@ -26,25 +29,21 @@ int main(int argc, char *argv[]) {
     bbmsg message;
     bbmsg sendmessage;
     unsigned int priority = 0;
-    message_queue listen_mq(open_or_create, LISTENER_QUEUE_NAME, 100,
-                            sizeof(bbmsg), perms);
-    message_queue reply_mq(open_or_create, REPLY_QUEUE_NAME, 100, sizeof(bbmsg),
-                           perms);
+    listenerQueue = mq_open(LISTENER_QUEUE_NAME, O_RDONLY, 0644);
+    replyQueue = mq_open(REPLY_QUEUE_NAME, O_NONBLOCK | O_WRONLY, 0644);
 
-    message_queue::size_type receivedSize;
     for (int i = 0; i < 10; i++) {
       logFile << "Waiting for message" << endl;
-      listen_mq.receive(&message, sizeof(bbmsg), receivedSize, priority);
+      mq_receive(listenerQueue, (char *)&message, sizeof(bbmsg), 0);
       logFile << message.message << endl;
       sendmessage.msgType = 12;
       strcat(sendmessage.message,
              "This is a test response from the underlying process");
-      reply_mq.send(&sendmessage, sizeof(bbmsg), priority);
+      mq_send(replyQueue, (const char *)&sendmessage, sizeof(bbmsg), 0);
     }
-  } catch (Exception &ex) {
+  } catch (exception &ex) {
     logFile << "ERROR: " << ex.what() << endl;
   }
-  BOOST_CATCH_END
 
   logFile << "end of program" << endl;
   logFile.flush();
