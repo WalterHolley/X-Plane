@@ -1,5 +1,6 @@
 // Copyright (c) 2024 Walter Holley III. All Rights Reserved.
 
+#include <fcntl.h>
 #define XPLM200
 #define XPLM210
 #define XPLM300
@@ -36,6 +37,7 @@ string TEST_DB = "NORTHWIND_AI";
 bool record = false;
 dataFrame flightData;
 vector<bbmsg> consolemsgs = {};
+pid_t clientPID;
 
 static void menuCallback(void *inMenuRef, void *inItemRef);
 static float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
@@ -95,8 +97,12 @@ void startClient() {
   sprintf(destination, "'%s'", xplPath);
   char *args[] = {destination, NULL};
   _log->debug(destination);
-  if (fork() == 0) {
-    execvp(args[0], args);
+  if (!clientPID) {
+    clientPID = fork();
+
+    if (clientPID == 0) {
+      execvp(args[0], args);
+    }
   }
 #endif
 }
@@ -136,7 +142,10 @@ float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
   if (record) {
     vector<bbmsg> messages = _mq->receive();
     consolemsgs.insert(consolemsgs.end(), messages.begin(), messages.end());
-
+    bbmsg confirm;
+    confirm.msgType = MESSAGE;
+    sprintf(confirm.message, "Queue has been checked for messages");
+    _mq->send(confirm);
     if (consolemsgs.size() > MAX_MSGS) {
       int delta = consolemsgs.size() - MAX_MSGS;
       auto end = consolemsgs.begin() + delta - 1;
@@ -187,7 +196,7 @@ PLUGIN_API int XPluginStart(char *name, char *sig, char *desc) {
                                       pluginSubMenuId, menuCallback, 0);
   XPLMAppendMenuItem(xplmMenuIdentifier, START_RECORDING, (void *)1, 1);
   XPLMAppendMenuItem(xplmMenuIdentifier, STOP_RECORDING, (void *)2, 1);
-  XPLMEnableMenuItem(xplmMenuIdentifier, 1, 1);
+  XPLMEnableMenuItem(xplmMenuIdentifier, 1, 0);
 
   XPLMRegisterFlightLoopCallback(pollData, 1.0, NULL);
 

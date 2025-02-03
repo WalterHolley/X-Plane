@@ -29,8 +29,8 @@ int main(int argc, char *argv[]) {
     bbmsg message;
     bbmsg sendmessage;
     unsigned int priority = 0;
-    listenerQueue = mq_open(LISTENER_QUEUE_NAME, O_RDONLY, 0644);
-    replyQueue = mq_open(REPLY_QUEUE_NAME, O_NONBLOCK | O_WRONLY, 0644);
+    listenerQueue = mq_open(LISTENER_QUEUE_NAME, O_RDONLY, 066);
+    replyQueue = mq_open(REPLY_QUEUE_NAME, O_NONBLOCK | O_WRONLY, 066);
 
     for (int i = 0; i < 10; i++) {
       logFile << "Waiting for message" << endl;
