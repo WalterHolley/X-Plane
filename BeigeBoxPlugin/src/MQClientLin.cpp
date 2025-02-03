@@ -1,10 +1,11 @@
 
 
+#include <cstdio>
+#include <errno.h>
 #include <fcntl.h>
 #include <string>
+#include <sys/stat.h>
 #include <sys/types.h>
-#define LISTENER_QUEUE "cwiq_mq_post"
-#define REPLY_QUEUE "cwiq_mq_reply"
 
 #include "include/MQClient.h"
 #include <mqueue.h>
@@ -14,6 +15,9 @@ mqd_t listenerQueue;
 mqd_t replyQueue;
 mq_attr attribs;
 
+const char *LISTENER_QUEUE = "/cwic_mq_post";
+const char *REPLY_QUEUE = "/cwic_mq_reply";
+
 MQClient::MQClient(Logger *log) {
   _log = log;
   mqInited = false;
@@ -21,21 +25,28 @@ MQClient::MQClient(Logger *log) {
 
 bool MQClient::init() {
   if (!mqInited) {
-    attribs.mq_maxmsg = 100;
+    attribs.mq_maxmsg = 10;
     attribs.mq_msgsize = sizeof(bbmsg);
     attribs.mq_flags = 0;
     attribs.mq_curmsgs = 0;
 
-    listenerQueue =
-        mq_open(LISTENER_QUEUE, O_CREAT | O_RDWR | O_NONBLOCK, 0644, &attribs);
-    replyQueue =
-        mq_open(REPLY_QUEUE, O_CREAT | O_RDWR | O_NONBLOCK, 0644, &attribs);
+    listenerQueue = mq_open(LISTENER_QUEUE, O_CREAT | O_RDONLY | O_NONBLOCK,
+                            0666, &attribs);
 
-    if (listenerQueue == (mqd_t)-1 || replyQueue == (mqd_t)-1) {
-      _log->error("MQCLIENT: MQs failed to initialize");
+    mqInited = true;
+    if (listenerQueue == (mqd_t)-1) {
 
+      _log->error("MQCLIENT: Listener MQ failed to initialize: " +
+                  std::to_string(errno));
+      mqInited = false;
     } else {
-      mqInited = true;
+      replyQueue =
+          mq_open(REPLY_QUEUE, O_CREAT | O_WRONLY | O_NONBLOCK, 0666, &attribs);
+      if (replyQueue == (mqd_t)-1) {
+        _log->error("MQCLIENT: Reply MQ failed to initialize: " +
+                    std::to_string(errno));
+        mqInited = false;
+      }
     }
   }
 
@@ -76,6 +87,8 @@ std::vector<bbmsg> MQClient::receive() {
 void MQClient::close() {
   mq_close(listenerQueue);
   mq_close(replyQueue);
+  mq_unlink(LISTENER_QUEUE);
+  mq_unlink(REPLY_QUEUE);
   _log->info("MQCLIENT: queues closed");
   mqInited = false;
 }

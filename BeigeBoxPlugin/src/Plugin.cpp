@@ -20,6 +20,7 @@
 #include <XPLM/XPLMMenus.h>
 #include <XPLM/XPLMProcessing.h>
 #include <XPLM/XPLMUtilities.h>
+#include <thread>
 
 Logger *_log;
 DataUtil *_dataUtil;
@@ -72,6 +73,7 @@ void cleanup() {
 
 void startClient() {
   char *xplPath;
+  char *destination;
   XPLMGetSystemPath(xplPath);
 #ifdef IBM
   // ShellExecute(NULL, "open", "F:\\X-Plane
@@ -89,14 +91,12 @@ void startClient() {
   }
 #endif
 #ifdef LIN
-  strcat(xplPath, "/Resources/plugins/Beigebox/lin_x64/bbclient");
-  char *args[] = {xplPath, NULL};
-  _log->debug(xplPath);
+  strcat(xplPath, "Resources/plugins/Beigebox/lin_x64/bbclient");
+  sprintf(destination, "'%s'", xplPath);
+  char *args[] = {destination, NULL};
+  _log->debug(destination);
   if (fork() == 0) {
-    setsid();
-    if (fork() == 0) {
-      execvp(args[0], args);
-    }
+    execvp(args[0], args);
   }
 #endif
 }
@@ -105,27 +105,29 @@ void start() {
   msg.msgType = INIT;
   strcat(msg.message, "Plugin started.  Hello!");
   _log->debug("Start selected from menu");
-  _mq->init();
-  // start client process
-  // startClient();
-  //_log->info("Client detached");
-  _mq->send(msg);
-  messageWindow = XPLMCreateWindowEx(&pluginWindow);
-  XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
-  XPLMSetWindowResizingLimits(messageWindow, 200, 200, 500, 500);
-  XPLMSetWindowGravity(messageWindow, 0, 1, 0, 1);
-  XPLMSetWindowTitle(messageWindow, "BeigeBox Message Viewer");
-  XPLMEnableMenuItem(xplmMenuIdentifier, 1, 0);
-  XPLMEnableMenuItem(xplmMenuIdentifier, 2, 1);
-  record = true;
+  if (_mq->init()) {
+    // start client process
+    thread t(startClient);
+    t.detach();
+    _log->info("Client detached");
+    _mq->send(msg);
+    messageWindow = XPLMCreateWindowEx(&pluginWindow);
+    XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
+    XPLMSetWindowResizingLimits(messageWindow, 200, 200, 500, 500);
+    XPLMSetWindowGravity(messageWindow, 0, 1, 0, 1);
+    XPLMSetWindowTitle(messageWindow, "BeigeBox Message Viewer");
+    XPLMEnableMenuItem(xplmMenuIdentifier, 0, 0);
+    XPLMEnableMenuItem(xplmMenuIdentifier, 1, 1);
+    record = true;
+  }
 }
 
 void stop() {
 
   _log->debug("Stop selected from menu");
 
-  XPLMEnableMenuItem(xplmMenuIdentifier, 1, 1);
-  XPLMEnableMenuItem(xplmMenuIdentifier, 2, 0);
+  XPLMEnableMenuItem(xplmMenuIdentifier, 0, 1);
+  XPLMEnableMenuItem(xplmMenuIdentifier, 1, 0);
   record = false;
 }
 
@@ -140,6 +142,7 @@ float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
       auto end = consolemsgs.begin() + delta - 1;
       consolemsgs.erase(consolemsgs.begin(), end);
     }
+    draw(messageWindow, &refCon);
   }
 
   return 1.0;
