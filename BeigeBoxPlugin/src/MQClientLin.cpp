@@ -56,7 +56,10 @@ bool MQClient::init() {
 bool MQClient::send(bbmsg message) {
   bool sent = false;
   if (mqInited) {
-    auto result = mq_send(replyQueue, (const char *)&message, sizeof(bbmsg), 0);
+    char *msg;
+    sprintf(msg, "%n|%s", message.msgType, message.message);
+    _log->debug(msg);
+    auto result = mq_send(replyQueue, msg, sizeof(bbmsg), 0);
     if (result == 0) {
       sent = true;
     } else {
@@ -72,14 +75,14 @@ std::vector<bbmsg> MQClient::receive() {
   int count = 0;
   do {
     bbmsg msg;
-    size = mq_receive(replyQueue, (char *)&msg, sizeof(bbmsg), 0);
+    size = mq_receive(listenerQueue, (char *)&msg, sizeof(bbmsg), 0);
 
     if (size <= 0) {
       break;
     }
     messages.push_back(msg);
     count++;
-  } while (count < 100);
+  } while (count < 10);
 
   return messages;
 }

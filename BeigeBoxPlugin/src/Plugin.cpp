@@ -76,6 +76,7 @@ void cleanup() {
 void startClient() {
   char *xplPath;
   char *destination;
+  sprintf(destination, "./Resources/plugins/BeigeBox/lin_x64/bbclient");
   XPLMGetSystemPath(xplPath);
 #ifdef IBM
   // ShellExecute(NULL, "open", "F:\\X-Plane
@@ -93,15 +94,15 @@ void startClient() {
   }
 #endif
 #ifdef LIN
-  strcat(xplPath, "Resources/plugins/Beigebox/lin_x64/bbclient");
-  sprintf(destination, "'%s'", xplPath);
+  // strcat(xplPath, "Resources/plugins/Beigebox/lin_x64/bbclient");
+  // sprintf(destination, "%s", xplPath);
   char *args[] = {destination, NULL};
-  _log->debug(destination);
+  _log->debug(args[0]);
   if (!clientPID) {
     clientPID = fork();
 
     if (clientPID == 0) {
-      execvp(args[0], args);
+      execv(args[0], args);
     }
   }
 #endif
