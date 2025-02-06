@@ -26,21 +26,18 @@ int main(int argc, char *argv[]) {
   logFile.open("bbclient_log.txt", ios_base::app);
   try {
 
-    bbmsg message;
-    bbmsg sendmessage;
+    char listenmsg[256];
+    char replymsg[256];
     unsigned int priority = 0;
     listenerQueue = mq_open(LISTENER_QUEUE_NAME, O_RDONLY, 066);
     replyQueue = mq_open(REPLY_QUEUE_NAME, O_NONBLOCK | O_WRONLY, 066);
 
-    for (int i = 0; i < 10; i++) {
-      logFile << "Waiting for message" << endl;
-      mq_receive(listenerQueue, (char *)&message, sizeof(bbmsg), 0);
-      logFile << message.message << endl;
-      sendmessage.msgType = 12;
-      strcat(sendmessage.message,
-             "This is a test response from the underlying process");
-      mq_send(replyQueue, (const char *)&sendmessage, sizeof(bbmsg), 0);
-    }
+    logFile << "Waiting for message" << endl;
+    mq_receive(listenerQueue, listenmsg, sizeof(listenmsg), 0);
+    logFile << listenmsg << endl;
+    strcat(replymsg, "This is a test response from the underlying process");
+    mq_send(replyQueue, replymsg, sizeof(replymsg), 0);
+
   } catch (exception &ex) {
     logFile << "ERROR: " << ex.what() << endl;
   }
