@@ -245,6 +245,7 @@ void menuCallback(void *menuRef, void *itemRef) {
 void draw(XPLMWindowID in_windowId, void *in_refcon) {
   int charHeight;
   int left, right, top, bottom;
+  _log->debug("Begin draw loop");
   XPLMSetGraphicsState(0, 0, 0, 0, 1, 1, 0);
   char textBuffer[288];
   // font and window settings

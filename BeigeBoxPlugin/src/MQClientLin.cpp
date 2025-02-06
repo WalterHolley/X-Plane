@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <errno.h>
+#include <exception>
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
@@ -56,10 +57,16 @@ bool MQClient::init() {
 bool MQClient::send(bbmsg message) {
   bool sent = false;
   if (mqInited) {
-    char *msg;
-    sprintf(msg, "%n|%s", message.msgType, message.message);
+    char msg[256];
+    int result;
+    sprintf(msg, "%d|%s", message.msgType, message.message);
     _log->debug(msg);
-    auto result = mq_send(replyQueue, msg, sizeof(bbmsg), 0);
+    try {
+      result = mq_send(replyQueue, msg, sizeof(msg), 0);
+
+    } catch (std::exception ex) {
+      result = errno;
+    }
     if (result == 0) {
       sent = true;
     } else {
@@ -73,16 +80,18 @@ std::vector<bbmsg> MQClient::receive() {
   std::vector<bbmsg> messages = {};
   ssize_t size;
   int count = 0;
-  do {
-    bbmsg msg;
-    size = mq_receive(listenerQueue, (char *)&msg, sizeof(bbmsg), 0);
+  if (mqInited) {
+    do {
+      bbmsg msg;
+      size = mq_receive(listenerQueue, (char *)&msg, sizeof(bbmsg), 0);
 
-    if (size <= 0) {
-      break;
-    }
-    messages.push_back(msg);
-    count++;
-  } while (count < 10);
+      if (size <= 0) {
+        break;
+      }
+      messages.push_back(msg);
+      count++;
+    } while (count < 10);
+  }
 
   return messages;
 }
