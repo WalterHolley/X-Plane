@@ -70,7 +70,7 @@ bool MQClient::send(bbmsg message) {
     if (result == 0) {
       sent = true;
     } else {
-      _log->error("MQCLIENT: Could not place message on lister MQ: " +
+      _log->error("MQCLIENT: Could not send message: " +
                   std::to_string(result));
     }
   }

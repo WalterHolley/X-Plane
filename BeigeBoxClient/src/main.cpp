@@ -4,8 +4,8 @@
 
 #include <cstdio>
 #include <fcntl.h>
-#define LISTENER_QUEUE_NAME "/cwiq_mq_reply"
-#define REPLY_QUEUE_NAME "/cwiq_mq_post"
+#define LISTENER_QUEUE_NAME "/cwic_mq_reply"
+#define REPLY_QUEUE_NAME "/cwic_mq_post"
 #define BUFFER_LENGTH 256
 #include <fstream>
 #include <mqueue.h>
