@@ -70,8 +70,7 @@ bool MQClient::send(bbmsg message) {
     if (result == 0) {
       sent = true;
     } else {
-      _log->error("MQCLIENT: Could not send message: " +
-                  std::to_string(result));
+      _log->error("MQCLIENT: Could not send message: " + std::to_string(errno));
     }
   }
   return sent;

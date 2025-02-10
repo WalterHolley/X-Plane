@@ -12,7 +12,6 @@
 #include <windows.h>
 #endif
 
-#include "include/DataUtil.h"
 #include "include/Logger.h"
 #include "include/MQClient.h"
 #include "include/Recorder.h"
@@ -21,10 +20,13 @@
 #include <XPLM/XPLMMenus.h>
 #include <XPLM/XPLMProcessing.h>
 #include <XPLM/XPLMUtilities.h>
+#include <string>
 #include <thread>
+#include <vector>
 
+using namespace std;
 Logger *_log;
-DataUtil *_dataUtil;
+
 Recorder *_recorder;
 MQClient *_mq;
 XPLMMenuID xplmMenuIdentifier;
@@ -37,7 +39,7 @@ string TEST_DB = "NORTHWIND_AI";
 bool record = false;
 dataFrame flightData;
 vector<bbmsg> consolemsgs = {};
-pid_t clientPID;
+pid_t clientPID = -1;
 
 static void menuCallback(void *inMenuRef, void *inItemRef);
 static float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
@@ -95,14 +97,14 @@ void startClient() {
 #endif
 #ifdef LIN
   // strcat(xplPath, "Resources/plugins/Beigebox/lin_x64/bbclient");
-  // sprintf(destination, "%s", xplPath);
+  sprintf(destination, "%s", xplPath);
   char *args[] = {destination, NULL};
   _log->debug(args[0]);
-  if (!clientPID) {
+  if (clientPID < 0) {
     clientPID = fork();
 
     if (clientPID == 0) {
-      execv(args[0], args);
+      execvp(args[0], args);
     }
   }
 #endif

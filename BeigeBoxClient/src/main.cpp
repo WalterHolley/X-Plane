@@ -9,7 +9,6 @@
 #define BUFFER_LENGTH 256
 #include <fstream>
 #include <mqueue.h>
-#include <string.h>
 
 using namespace std;
 
@@ -29,14 +28,16 @@ int main(int argc, char *argv[]) {
     char listenmsg[256];
     char replymsg[256];
     unsigned int priority = 0;
-    listenerQueue = mq_open(LISTENER_QUEUE_NAME, O_RDONLY, 066);
-    replyQueue = mq_open(REPLY_QUEUE_NAME, O_NONBLOCK | O_WRONLY, 066);
+    listenerQueue = mq_open(LISTENER_QUEUE_NAME, O_RDONLY, 0666);
+    replyQueue = mq_open(REPLY_QUEUE_NAME, O_NONBLOCK | O_WRONLY, 0666);
 
-    logFile << "Waiting for message" << endl;
-    mq_receive(listenerQueue, listenmsg, sizeof(listenmsg), 0);
-    logFile << listenmsg << endl;
-    strcat(replymsg, "This is a test response from the underlying process");
-    mq_send(replyQueue, replymsg, sizeof(replymsg), 0);
+    do {
+      logFile << "Waiting for message" << endl;
+      mq_receive(listenerQueue, listenmsg, sizeof(listenmsg), 0);
+      logFile << listenmsg << endl;
+      sprintf(replymsg, "This is a test response from the underlying process");
+      mq_send(replyQueue, replymsg, sizeof(replymsg), 0);
+    } while (true);
 
   } catch (exception &ex) {
     logFile << "ERROR: " << ex.what() << endl;

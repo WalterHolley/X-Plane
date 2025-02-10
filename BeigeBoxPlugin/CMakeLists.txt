@@ -6,7 +6,7 @@ set(Boost_DEBUG ON)
 set(XPLANE_INCLUDE_DIR "../SDK/xplane")
 get_filename_component(PROJECT_ROOT .. ABSOLUTE)
 project("BBPlugin")
-find_package(Boost 1.82.0 COMPONENTS thread)
+find_package(Boost 1.82.0 COMPONENTS thread )
 
 
 
