@@ -27,7 +27,7 @@ MQClient::MQClient(Logger *log) {
 bool MQClient::init() {
   if (!mqInited) {
     attribs.mq_maxmsg = 10;
-    attribs.mq_msgsize = sizeof(bbmsg);
+    attribs.mq_msgsize = sizeof(char[256]);
     attribs.mq_flags = 0;
     attribs.mq_curmsgs = 0;
 
@@ -81,15 +81,20 @@ std::vector<bbmsg> MQClient::receive() {
   int count = 0;
   if (mqInited) {
     do {
-      bbmsg msg;
-      size = mq_receive(listenerQueue, (char *)&msg, sizeof(bbmsg), 0);
+      bbmsg result;
+      char reply[256];
+      size = mq_receive(listenerQueue, reply, sizeof(reply), 0);
 
       if (size <= 0) {
         break;
       }
-      messages.push_back(msg);
+
+      sprintf(result.message, "%s", reply);
+      sprintf(reply, "MQCLIENT: Message received: %s", result.message);
+      _log->debug(reply);
+      messages.push_back(result);
       count++;
-    } while (count < 10);
+    } while (size > 0 && count < 10);
   }
 
   return messages;

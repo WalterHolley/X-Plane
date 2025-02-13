@@ -21,7 +21,6 @@
 #include <XPLM/XPLMProcessing.h>
 #include <XPLM/XPLMUtilities.h>
 #include <string>
-#include <thread>
 #include <vector>
 
 using namespace std;
@@ -95,19 +94,6 @@ void startClient() {
     CloseHandle(processInformation.hThread);
   }
 #endif
-#ifdef LIN
-  // strcat(xplPath, "Resources/plugins/Beigebox/lin_x64/bbclient");
-  sprintf(destination, "%s", xplPath);
-  char *args[] = {destination, NULL};
-  _log->debug(args[0]);
-  if (clientPID < 0) {
-    clientPID = fork();
-
-    if (clientPID == 0) {
-      execvp(args[0], args);
-    }
-  }
-#endif
 }
 void start() {
   bbmsg msg;
@@ -115,11 +101,13 @@ void start() {
   strcat(msg.message, "Plugin started.  Hello!");
   _log->debug("Start selected from menu");
   if (_mq->init()) {
-    // start client process
+    _mq->send(msg);
+// start client process
+#ifdef IBM
     thread t(startClient);
     t.detach();
     _log->info("Client detached");
-    _mq->send(msg);
+#endif
     messageWindow = XPLMCreateWindowEx(&pluginWindow);
     XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
     XPLMSetWindowResizingLimits(messageWindow, 200, 200, 500, 500);
@@ -127,6 +115,7 @@ void start() {
     XPLMSetWindowTitle(messageWindow, "BeigeBox Message Viewer");
     XPLMEnableMenuItem(xplmMenuIdentifier, 0, 0);
     XPLMEnableMenuItem(xplmMenuIdentifier, 1, 1);
+
     record = true;
   }
 }
@@ -145,16 +134,11 @@ float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
   if (record) {
     vector<bbmsg> messages = _mq->receive();
     consolemsgs.insert(consolemsgs.end(), messages.begin(), messages.end());
-    bbmsg confirm;
-    confirm.msgType = MESSAGE;
-    sprintf(confirm.message, "Queue has been checked for messages");
-    _mq->send(confirm);
     if (consolemsgs.size() > MAX_MSGS) {
       int delta = consolemsgs.size() - MAX_MSGS;
       auto end = consolemsgs.begin() + delta - 1;
       consolemsgs.erase(consolemsgs.begin(), end);
     }
-    draw(messageWindow, &refCon);
   }
 
   return 1.0;
@@ -183,14 +167,14 @@ PLUGIN_API int XPluginStart(char *name, char *sig, char *desc) {
   pluginWindow.visible = 1;
   pluginWindow.drawWindowFunc = draw;
   pluginWindow.handleMouseClickFunc = dumbMouseHandler;
-  pluginWindow.handleRightClickFunc = NULL;
+  pluginWindow.handleRightClickFunc = dumbMouseHandler;
   pluginWindow.handleMouseWheelFunc = dumbMWheelHandler;
   pluginWindow.handleKeyFunc = dumbKeyHandler;
   pluginWindow.handleCursorFunc = dumbCursorHandler;
   pluginWindow.refcon = NULL;
   pluginWindow.layer = xplm_WindowLayerFloatingWindows;
   pluginWindow.handleRightClickFunc = dumbMouseHandler;
-  pluginWindow.decorateAsFloatingWindow = 1;
+  pluginWindow.decorateAsFloatingWindow = xplm_WindowDecorationRoundRectangle;
 
   // menu setup
   pluginSubMenuId =
