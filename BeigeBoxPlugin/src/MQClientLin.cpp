@@ -1,15 +1,13 @@
 
 
+#include "include/MQClient.h"
 #include <cstdio>
 #include <errno.h>
-#include <exception>
 #include <fcntl.h>
+#include <mqueue.h>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#include "include/MQClient.h"
-#include <mqueue.h>
 #include <vector>
 
 mqd_t listenerQueue;
@@ -27,13 +25,14 @@ MQClient::MQClient(Logger *log) {
 bool MQClient::init() {
   if (!mqInited) {
     attribs.mq_maxmsg = 10;
-    attribs.mq_msgsize = sizeof(char[256]);
+    attribs.mq_msgsize = sizeof(bbmsg);
     attribs.mq_flags = 0;
     attribs.mq_curmsgs = 0;
 
     listenerQueue = mq_open(LISTENER_QUEUE, O_CREAT | O_RDONLY | O_NONBLOCK,
                             0666, &attribs);
-
+    _log->debug("MQCLIENT: Message size: " +
+                std::to_string(attribs.mq_msgsize));
     mqInited = true;
     if (listenerQueue == (mqd_t)-1) {
 
@@ -57,20 +56,20 @@ bool MQClient::init() {
 bool MQClient::send(bbmsg message) {
   bool sent = false;
   if (mqInited) {
-    char msg[256];
+    _log->debug("MQCLIENT:  Outgoing message size: " +
+                std::to_string(sizeof(message)));
     int result;
-    sprintf(msg, "%d|%s", message.msgType, message.message);
-    _log->debug(msg);
-    try {
-      result = mq_send(replyQueue, msg, sizeof(msg), 0);
+    result = 0;
+    result = mq_send(replyQueue, (const char *)&message, sizeof(message), 0);
+    _log->debug("MQCLIENT:  Message Sent: " + std::to_string(message.msgType) +
+                "|" + std::string(message.message));
 
-    } catch (std::exception ex) {
-      result = errno;
-    }
     if (result == 0) {
       sent = true;
     } else {
-      _log->error("MQCLIENT: Could not send message: " + std::to_string(errno));
+      result = errno;
+      _log->error("MQCLIENT:  Could not send message: " +
+                  std::string((const char *)strerror(errno)));
     }
   }
   return sent;
@@ -82,16 +81,16 @@ std::vector<bbmsg> MQClient::receive() {
   if (mqInited) {
     do {
       bbmsg result;
-      char reply[256];
-      size = mq_receive(listenerQueue, reply, sizeof(reply), 0);
-
-      if (size <= 0) {
+      size = mq_receive(listenerQueue, (char *)&result, sizeof(result), 0);
+      if (size < 0) {
+        _log->error("MQCLIENT: Failed to receive message: " +
+                    std::string((const char *)strerror(errno)));
         break;
       }
 
-      sprintf(result.message, "%s", reply);
-      sprintf(reply, "MQCLIENT: Message received: %s", result.message);
-      _log->debug(reply);
+      _log->debug(
+          "MQCLIENT: Message Received: " + std::to_string(result.msgType) +
+          "|" + std::string(result.message));
       messages.push_back(result);
       count++;
     } while (size > 0 && count < 10);

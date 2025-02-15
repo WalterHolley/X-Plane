@@ -9,6 +9,7 @@
 #define BUFFER_LENGTH 256
 #include <fstream>
 #include <mqueue.h>
+#include <string>
 
 using namespace std;
 
@@ -18,25 +19,30 @@ mqd_t replyQueue;
 
 struct bbmsg {
   unsigned int msgType;
-  char message[256];
+  char message[BUFFER_LENGTH];
 };
 
 int main(int argc, char *argv[]) {
   logFile.open("bbclient_log.txt", ios_base::app);
   try {
 
-    char listenmsg[256];
-    char replymsg[256];
     unsigned int priority = 0;
     listenerQueue = mq_open(LISTENER_QUEUE_NAME, O_RDONLY, 0666);
     replyQueue = mq_open(REPLY_QUEUE_NAME, O_NONBLOCK | O_WRONLY, 0666);
 
     do {
+      bbmsg incoming;
       logFile << "Waiting for message" << endl;
-      mq_receive(listenerQueue, listenmsg, sizeof(listenmsg), 0);
-      logFile << listenmsg << endl;
-      sprintf(replymsg, "This is a test response from the underlying process");
-      mq_send(replyQueue, replymsg, sizeof(replymsg), 0);
+      mq_receive(listenerQueue, (char *)&incoming, sizeof(bbmsg), 0);
+      logFile << incoming.message << endl;
+      bbmsg outgoing;
+      sprintf(outgoing.message,
+              "This is a test response from the underlying process");
+      outgoing.msgType = 12;
+      mq_send(replyQueue, (const char *)&outgoing, sizeof(bbmsg), 0);
+      logFile << "Outgoing message: " + to_string(outgoing.msgType) + "|" +
+                     std::string(outgoing.message)
+              << endl;
     } while (true);
 
   } catch (exception &ex) {
