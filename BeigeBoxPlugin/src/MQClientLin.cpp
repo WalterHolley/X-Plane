@@ -17,6 +17,20 @@ mq_attr attribs;
 const char *LISTENER_QUEUE = "/cwic_mq_post";
 const char *REPLY_QUEUE = "/cwic_mq_reply";
 
+bbmsg getMessage(u_int8_t *queueMessage) {
+  bbmsg result;
+  result.msgType |= static_cast<unsigned int>(queueMessage[0]) << 0;
+  result.msgType |= static_cast<unsigned int>(queueMessage[1]) << 8;
+  result.msgType |= static_cast<unsigned int>(queueMessage[2]) << 16;
+  result.msgType |= static_cast<unsigned int>(queueMessage[3]) << 24;
+
+  for (int i = 4; i < sizeof(queueMessage); i++) {
+    result.message[i - 4] = (char)queueMessage[i];
+  }
+
+  return result;
+}
+
 MQClient::MQClient(Logger *log) {
   _log = log;
   mqInited = false;

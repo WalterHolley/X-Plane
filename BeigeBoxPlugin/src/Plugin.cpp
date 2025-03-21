@@ -108,7 +108,6 @@ void start() {
     t.detach();
     _log->info("Client detached");
 #endif
-    messageWindow = XPLMCreateWindowEx(&pluginWindow);
     XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
     XPLMSetWindowResizingLimits(messageWindow, 200, 200, 500, 500);
     XPLMSetWindowGravity(messageWindow, 0, 1, 0, 1);
@@ -148,11 +147,9 @@ float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
 PLUGIN_API int XPluginStart(char *name, char *sig, char *desc) {
   _log = new Logger();
   _mq = new MQClient(_log);
-  int desktopScreenBounds[4];
-
+  int l, r, b, t;
   // Screen bounds
-  XPLMGetScreenBoundsGlobal(&desktopScreenBounds[0], &desktopScreenBounds[2],
-                            &desktopScreenBounds[1], &desktopScreenBounds[3]);
+  XPLMGetScreenBoundsGlobal(&l, &t, &r, &b);
   // basic plugin information
   strcpy(name, "BeigeBox");
   strcpy(sig, "com.avidata.recorder");
@@ -160,10 +157,6 @@ PLUGIN_API int XPluginStart(char *name, char *sig, char *desc) {
 
   // message window defininition
   pluginWindow.structSize = sizeof(pluginWindow);
-  pluginWindow.left = desktopScreenBounds[0] + 50;
-  pluginWindow.right = desktopScreenBounds[0] + 350;
-  pluginWindow.top = desktopScreenBounds[1] + 450;
-  pluginWindow.bottom = desktopScreenBounds[1] + 50;
   pluginWindow.visible = 1;
   pluginWindow.drawWindowFunc = draw;
   pluginWindow.handleMouseClickFunc = dumbMouseHandler;
@@ -171,10 +164,19 @@ PLUGIN_API int XPluginStart(char *name, char *sig, char *desc) {
   pluginWindow.handleMouseWheelFunc = dumbMWheelHandler;
   pluginWindow.handleKeyFunc = dumbKeyHandler;
   pluginWindow.handleCursorFunc = dumbCursorHandler;
-  pluginWindow.refcon = NULL;
+  pluginWindow.refcon = nullptr;
   pluginWindow.layer = xplm_WindowLayerFloatingWindows;
   pluginWindow.handleRightClickFunc = dumbMouseHandler;
   pluginWindow.decorateAsFloatingWindow = xplm_WindowDecorationRoundRectangle;
+  pluginWindow.left = l + 50;
+  pluginWindow.bottom = b + 50;
+  pluginWindow.right = pluginWindow.left + 200;
+  pluginWindow.top = pluginWindow.bottom + 200;
+
+  messageWindow = XPLMCreateWindowEx(&pluginWindow);
+  XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
+  XPLMSetWindowResizingLimits(messageWindow, 200, 200, 300, 300);
+  XPLMSetWindowTitle(messageWindow, "Flight Messaging");
 
   // menu setup
   pluginSubMenuId =
