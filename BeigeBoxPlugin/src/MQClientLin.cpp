@@ -17,6 +17,20 @@ mq_attr attribs;
 const char *LISTENER_QUEUE = "/cwic_mq_post";
 const char *REPLY_QUEUE = "/cwic_mq_reply";
 
+bbmsg getMessage(u_int8_t *queueMessage) {
+  bbmsg result;
+  result.msgType |= static_cast<unsigned int>(queueMessage[0]) << 0;
+  result.msgType |= static_cast<unsigned int>(queueMessage[1]) << 8;
+  result.msgType |= static_cast<unsigned int>(queueMessage[2]) << 16;
+  result.msgType |= static_cast<unsigned int>(queueMessage[3]) << 24;
+
+  for (int i = 4; i < sizeof(queueMessage); i++) {
+    result.message[i - 4] = (char)queueMessage[i];
+  }
+
+  return result;
+}
+
 MQClient::MQClient(Logger *log) {
   _log = log;
   mqInited = false;
@@ -77,15 +91,25 @@ bool MQClient::send(bbmsg message) {
 std::vector<bbmsg> MQClient::receive() {
   std::vector<bbmsg> messages = {};
   ssize_t size;
+  u_int8_t msg[sizeof(bbmsg)];
   int count = 0;
   if (mqInited) {
     do {
       bbmsg result;
-      size = mq_receive(listenerQueue, (char *)&result, sizeof(result), 0);
+      u_int8_t msg[sizeof(bbmsg)];
+      size = mq_receive(listenerQueue, (char *)&msg, sizeof(result), 0);
       if (size < 0) {
         _log->error("MQCLIENT: Failed to receive message: " +
                     std::string((const char *)strerror(errno)));
         break;
+      }
+      result.msgType |= static_cast<unsigned int>(msg[0]) << 0;
+      result.msgType |= static_cast<unsigned int>(msg[1]) << 8;
+      result.msgType |= static_cast<unsigned int>(msg[2]) << 16;
+      result.msgType |= static_cast<unsigned int>(msg[3]) << 24;
+
+      for (int i = 4; i < sizeof(msg); i++) {
+        result.message[i - 4] = (char)msg[i];
       }
 
       _log->debug(
