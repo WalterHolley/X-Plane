@@ -103,11 +103,7 @@ std::vector<bbmsg> MQClient::receive() {
                     std::string((const char *)strerror(errno)));
         break;
       }
-      result.msgType |= static_cast<unsigned int>(msg[0]) << 0;
-      result.msgType |= static_cast<unsigned int>(msg[1]) << 8;
-      result.msgType |= static_cast<unsigned int>(msg[2]) << 16;
-      result.msgType |= static_cast<unsigned int>(msg[3]) << 24;
-
+      result.msgType = static_cast<unsigned int>(msg[0]);
       for (int i = 4; i < sizeof(msg); i++) {
         result.message[i - 4] = (char)msg[i];
       }
