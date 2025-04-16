@@ -1,6 +1,5 @@
 // Copyright (c) 2024 Walter Holley III. All Rights Reserved.
 
-#include <fcntl.h>
 #define XPLM200
 #define XPLM210
 #define XPLM300
@@ -20,6 +19,9 @@
 #include <XPLM/XPLMMenus.h>
 #include <XPLM/XPLMProcessing.h>
 #include <XPLM/XPLMUtilities.h>
+#include <XPWidgetDefs.h>
+#include <XPWidgets.h>
+#include <fcntl.h>
 #include <string>
 #include <vector>
 
@@ -30,6 +32,10 @@ Recorder *_recorder;
 MQClient *_mq;
 XPLMMenuID xplmMenuIdentifier;
 XPLMCreateWindow_t pluginWindow;
+XPWidgetID messageWidget = NULL;
+XPWidgetID messageWidgetWindow = NULL;
+XPWidgetID messageWidgetText[150] = {NULL};
+
 int pluginSubMenuId;
 const char *BASE_MENU_NAME = "BeigeBox";
 const char *START_RECORDING = "Start Recording";
@@ -45,6 +51,9 @@ static float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
                       int count, void *refCon);
 static void defineWindow();
 static XPLMWindowID messageWindow;
+
+// plugin widget methods
+void createMessageWidget(int x, int y, int width, int height);
 
 // plugin window methods
 void draw(XPLMWindowID in_windowId, void *refCon);
@@ -173,10 +182,10 @@ PLUGIN_API int XPluginStart(char *name, char *sig, char *desc) {
   pluginWindow.right = pluginWindow.left + 200;
   pluginWindow.top = pluginWindow.bottom + 200;
 
-  messageWindow = XPLMCreateWindowEx(&pluginWindow);
-  XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
-  XPLMSetWindowResizingLimits(messageWindow, 200, 200, 300, 300);
-  XPLMSetWindowTitle(messageWindow, "Flight Messaging");
+  // messageWindow = XPLMCreateWindowEx(&pluginWindow);
+  // XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
+  // XPLMSetWindowResizingLimits(messageWindow, 200, 200, 300, 300);
+  // XPLMSetWindowTitle(messageWindow, "Flight Messaging");
 
   // menu setup
   pluginSubMenuId =
