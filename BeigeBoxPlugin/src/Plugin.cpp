@@ -19,8 +19,8 @@
 #include <XPLM/XPLMMenus.h>
 #include <XPLM/XPLMProcessing.h>
 #include <XPLM/XPLMUtilities.h>
-#include <XPWidgetDefs.h>
-#include <XPWidgets.h>
+#include <XPLM/XPStandardWidgets.h>
+#include <XPLM/XPWidgets.h>
 #include <fcntl.h>
 #include <string>
 #include <vector>
@@ -50,7 +50,7 @@ static void menuCallback(void *inMenuRef, void *inItemRef);
 static float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
                       int count, void *refCon);
 static void defineWindow();
-static XPLMWindowID messageWindow;
+// static XPLMWindowID messageWindow;
 
 // plugin widget methods
 void createMessageWidget(int x, int y, int width, int height);
@@ -73,8 +73,9 @@ int dumbMouseHandler(XPLMWindowID in_window_id, int x, int y,
 }
 
 void cleanup() {
+
   XPLMUnregisterFlightLoopCallback(pollData, NULL);
-  XPLMDestroyWindow(messageWindow);
+  // XPLMDestroyWindow(messageWindow);
   if (_mq) {
     _mq->close();
   }
@@ -117,10 +118,10 @@ void start() {
     t.detach();
     _log->info("Client detached");
 #endif
-    XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
-    XPLMSetWindowResizingLimits(messageWindow, 200, 200, 500, 500);
-    XPLMSetWindowGravity(messageWindow, 0, 1, 0, 1);
-    XPLMSetWindowTitle(messageWindow, "BeigeBox Message Viewer");
+    // XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
+    // XPLMSetWindowResizingLimits(messageWindow, 200, 200, 500, 500);
+    // XPLMSetWindowGravity(messageWindow, 0, 1, 0, 1);
+    // XPLMSetWindowTitle(messageWindow, "BeigeBox Message Viewer");
     XPLMEnableMenuItem(xplmMenuIdentifier, 0, 0);
     XPLMEnableMenuItem(xplmMenuIdentifier, 1, 1);
 
@@ -237,6 +238,16 @@ void menuCallback(void *menuRef, void *itemRef) {
     _log->error("MENU: unknown menu item selected");
     break;
   }
+}
+
+void createMessageWidget(int x, int y, int width, int height) {
+
+  int x2 = x + width;
+  int y2 = y - height;
+
+  // widget creation
+  messageWidget = XPCreateWidget(x, y, x2, y2, 1, "CWIC Messages", 1, NULL,
+                                 xpWidgetClass_MainWindow);
 }
 
 void draw(XPLMWindowID in_windowId, void *in_refcon) {
