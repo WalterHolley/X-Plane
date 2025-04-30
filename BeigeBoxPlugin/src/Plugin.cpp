@@ -13,7 +13,6 @@
 
 #include "include/Logger.h"
 #include "include/MQClient.h"
-#include "include/Recorder.h"
 #include <XPLM/XPLMDisplay.h>
 #include <XPLM/XPLMGraphics.h>
 #include <XPLM/XPLMMenus.h>
@@ -28,7 +27,6 @@
 using namespace std;
 Logger *_log;
 
-Recorder *_recorder;
 MQClient *_mq;
 XPLMMenuID xplmMenuIdentifier;
 XPLMCreateWindow_t pluginWindow;
@@ -42,7 +40,6 @@ const char *START_RECORDING = "Start Recording";
 const char *STOP_RECORDING = "Stop Recording";
 string TEST_DB = "NORTHWIND_AI";
 bool record = false;
-dataFrame flightData;
 vector<bbmsg> consolemsgs = {};
 pid_t clientPID = -1;
 
@@ -50,7 +47,7 @@ static void menuCallback(void *inMenuRef, void *inItemRef);
 static float pollData(float timeSinceLastCall, float timeSinceLastFlightLoop,
                       int count, void *refCon);
 static void defineWindow();
-// static XPLMWindowID messageWindow;
+static XPLMWindowID messageWindow;
 
 // plugin widget methods
 void createMessageWidget(int x, int y, int width, int height);
@@ -75,7 +72,7 @@ int dumbMouseHandler(XPLMWindowID in_window_id, int x, int y,
 void cleanup() {
 
   XPLMUnregisterFlightLoopCallback(pollData, NULL);
-  // XPLMDestroyWindow(messageWindow);
+  XPLMDestroyWindow(messageWindow);
   if (_mq) {
     _mq->close();
   }
@@ -118,10 +115,10 @@ void start() {
     t.detach();
     _log->info("Client detached");
 #endif
-    // XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
-    // XPLMSetWindowResizingLimits(messageWindow, 200, 200, 500, 500);
-    // XPLMSetWindowGravity(messageWindow, 0, 1, 0, 1);
-    // XPLMSetWindowTitle(messageWindow, "BeigeBox Message Viewer");
+    XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
+    XPLMSetWindowResizingLimits(messageWindow, 200, 200, 500, 500);
+    XPLMSetWindowGravity(messageWindow, 0, 1, 0, 1);
+    XPLMSetWindowTitle(messageWindow, "BeigeBox Message Viewer");
     XPLMEnableMenuItem(xplmMenuIdentifier, 0, 0);
     XPLMEnableMenuItem(xplmMenuIdentifier, 1, 1);
 
@@ -183,10 +180,10 @@ PLUGIN_API int XPluginStart(char *name, char *sig, char *desc) {
   pluginWindow.right = pluginWindow.left + 200;
   pluginWindow.top = pluginWindow.bottom + 200;
 
-  // messageWindow = XPLMCreateWindowEx(&pluginWindow);
-  // XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
-  // XPLMSetWindowResizingLimits(messageWindow, 200, 200, 300, 300);
-  // XPLMSetWindowTitle(messageWindow, "Flight Messaging");
+  messageWindow = XPLMCreateWindowEx(&pluginWindow);
+  XPLMSetWindowPositioningMode(messageWindow, xplm_WindowPositionFree, -1);
+  XPLMSetWindowResizingLimits(messageWindow, 200, 200, 300, 300);
+  XPLMSetWindowTitle(messageWindow, "Flight Messaging");
 
   // menu setup
   pluginSubMenuId =
@@ -238,16 +235,6 @@ void menuCallback(void *menuRef, void *itemRef) {
     _log->error("MENU: unknown menu item selected");
     break;
   }
-}
-
-void createMessageWidget(int x, int y, int width, int height) {
-
-  int x2 = x + width;
-  int y2 = y - height;
-
-  // widget creation
-  messageWidget = XPCreateWidget(x, y, x2, y2, 1, "CWIC Messages", 1, NULL,
-                                 xpWidgetClass_MainWindow);
 }
 
 void draw(XPLMWindowID in_windowId, void *in_refcon) {
