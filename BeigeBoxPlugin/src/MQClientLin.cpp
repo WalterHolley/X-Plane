@@ -84,19 +84,20 @@ std::vector<bbmsg> MQClient::receive() {
       bbmsg result;
       u_int8_t msg[sizeof(bbmsg)];
       size = mq_receive(listenerQueue, (char *)&msg, sizeof(result), 0);
-      if (size < 0) {
+      if (size < 0 || size > sizeof(bbmsg)) {
         _log->error("MQCLIENT: Failed to receive message: " +
                     std::string((const char *)strerror(errno)));
+        _log->error("MQCLIENT: Failed message size: " + std::to_string(size));
         break;
       }
       result.msgType = static_cast<unsigned int>(msg[0]);
       for (int i = 4; i < sizeof(msg); i++) {
         result.message[i - 4] = (char)msg[i];
       }
-
       _log->debug(
           "MQCLIENT: Message Received: " + std::to_string(result.msgType) +
           "|" + std::string(result.message));
+      _log->debug("MQCLIENT: Received message size: " + std::to_string(size));
       messages.push_back(result);
       count++;
     } while (size > 0 && count < 10);
