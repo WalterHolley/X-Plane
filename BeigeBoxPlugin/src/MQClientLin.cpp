@@ -24,8 +24,8 @@ MQClient::MQClient(Logger *log) {
 
 bool MQClient::init() {
   if (!mqInited) {
-    attribs.mq_maxmsg = 10;
-    attribs.mq_msgsize = sizeof(bbmsg);
+    attribs.mq_maxmsg = 20;
+    attribs.mq_msgsize = MSG_SIZE;
     attribs.mq_flags = 0;
     attribs.mq_curmsgs = 0;
 
@@ -82,9 +82,9 @@ std::vector<bbmsg> MQClient::receive() {
   if (mqInited) {
     do {
       bbmsg result;
-      u_int8_t msg[sizeof(bbmsg)];
-      size = mq_receive(listenerQueue, (char *)&msg, sizeof(result), 0);
-      if (size < 0 || size > sizeof(bbmsg)) {
+      u_int8_t msg[MSG_SIZE];
+      size = mq_receive(listenerQueue, (char *)&msg, MSG_SIZE, 0);
+      if (size < 0 || size > MSG_SIZE) {
         _log->error("MQCLIENT: Failed to receive message: " +
                     std::string((const char *)strerror(errno)));
         _log->error("MQCLIENT: Failed message size: " + std::to_string(size));

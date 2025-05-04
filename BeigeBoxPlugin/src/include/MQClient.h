@@ -2,6 +2,7 @@
 
 #ifndef MQCLIENT_H
 #define MQCLIENT_H
+#define MSG_SIZE 260
 
 #include "Logger.h"
 #include <boost/interprocess/ipc/message_queue.hpp>
